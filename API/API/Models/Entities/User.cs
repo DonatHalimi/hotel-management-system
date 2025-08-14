@@ -9,19 +9,15 @@ namespace API.Models.Entities
         [Key]
         public Guid UserID { get; set; }
 
-        [Required, MaxLength(50)]
-        public string FirstName { get; set; }
+        public string? FirstName { get; set; }
 
-        [Required, MaxLength(50)]
-        public string LastName { get; set; }
+        public string? LastName { get; set; }
 
-        [Required, EmailAddress, MaxLength(100)]
-        public string Email { get; set; }
+        public string? Email { get; set; }
+
+        public string? Password { get; set; }
 
         public string? ProfilePicture { get; set; }
-
-        [Required]
-        public string Password { get; set; }
 
         [NotMapped]
         public string FullName => $"{FirstName} {LastName}";

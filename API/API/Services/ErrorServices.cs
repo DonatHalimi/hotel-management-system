@@ -11,10 +11,11 @@ namespace API.Services
             string displayName = isPlural ? entityName.ToPlural() : entityName;
 
             var messages = new Dictionary<string, string>
-        {
-            {"DELETE_ERROR", $"Failed to delete {displayName.ToLower()}"},
-            {"DELETE_BULK_ERROR", $"No matching {displayName.ToLower()} found"},
-        };
+            {
+                {"UPDATE_ERROR", $"Failed to update {displayName.ToLower()}"},
+                {"DELETE_ERROR", $"Failed to delete {displayName.ToLower()}"},
+                {"DELETE_BULK_ERROR", $"No matching {displayName.ToLower()} found"},
+            };
 
             return new ObjectResult(new
             {

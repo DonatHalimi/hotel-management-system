@@ -2,6 +2,7 @@
 using FluentValidation;
 using System;
 using System.Linq;
+using System.Net.NetworkInformation;
 
 namespace API.Validations.Rules
 {
@@ -21,7 +22,7 @@ namespace API.Validations.Rules
                 .Must(BeUniqueChars).WithMessage($"Password must contain at least {minimumLength} unique characters");
         }
 
-        public static IRuleBuilderOptions<T, string> ApplyPasswordRulesWithPersonalInfoCheck<T>(
+        public static IRuleBuilderOptions<T, string> ApplyPasswordRules<T>(
             this IRuleBuilder<T, string> ruleBuilder,
             Func<T, string> firstNameSelector,
             Func<T, string> lastNameSelector,

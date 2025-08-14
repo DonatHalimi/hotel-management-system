@@ -1,45 +1,58 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using API.Data.Context;
+﻿using API.Data.Context;
+using API.Helpers;
 using API.Models.DTOs;
+using API.Models.Entities;
+using API.Validations;
+using API.Validations.Constants;
+using FluentValidation;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using FluentValidation;
-using API.Validations;
-using Microsoft.AspNetCore.Http;
-using System.Net;
-using API.Validations.Constants;
-using API.Services;
 
 namespace API.Controllers
 {
     [ApiController]
     [Route("api/users")]
-    public class UserController(AppDbContext context, IValidator<UpdateUserDTO> updateUserDtoValidator, IValidator<BulkDeleteDTO> bulkDeleteValidator) : ControllerBase
+    public class UserController(AppDbContext context, IValidator<RegisterDTO> registerValidator, IValidator<UpdateUserDTO> updateUserDtoValidator, IValidator<BulkDeleteDTO> bulkDeleteValidator) : ControllerBase
     {
         private readonly AppDbContext _context = context;
         private readonly IValidator<UpdateUserDTO> _updateUserDtoValidator = updateUserDtoValidator;
         private readonly IValidator<BulkDeleteDTO> _bulkDeleteValidator = bulkDeleteValidator;
+        private readonly IValidator<RegisterDTO> _registerValidator = registerValidator;
 
         // GET: api/users
         [HttpGet]
-        public async Task<IActionResult> GetUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        [HttpGet]
+        public async Task<IActionResult> GetUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? search = null)
         {
-            PaginationValidation.Validate(page, pageSize, out var validationResult);
+            PaginationValidation.Validate(page, pageSize, search, out var validationResult);
             if (validationResult != null) return validationResult;
 
-            var totalUsers = await _context.Users.CountAsync();
+            var query = _context.Users.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var s = $"%{search.Trim()}%";
+                query = query.Where(u =>
+                    EF.Functions.Like(u.FirstName, s) ||
+                    EF.Functions.Like(u.LastName, s) ||
+                    EF.Functions.Like(u.Email, s));
+            }
+
+            var totalUsers = await query.CountAsync();
+            if (totalUsers == 0) return NotFound();
+
             var totalPages = (int)Math.Ceiling(totalUsers / (double)pageSize);
+            if (page > totalPages) return NotFound("Page number exceeds total pages.");
 
-            if (page > totalPages && totalUsers > 0) return NotFound("Page number exceeds total pages.");
-
-            var users = await _context.Users
+            var users = await query
+                .OrderBy(u => u.FirstName)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
-
-            if (users.Count == 0) return NotFound();
 
             Response.Headers.Append("X-Total-Count", totalUsers.ToString());
             Response.Headers.Append("X-Total-Pages", totalPages.ToString());
@@ -48,7 +61,6 @@ namespace API.Controllers
         }
 
         // GET: api/users/:id
-        // add custom messages for error from ErrorService.cs, in the frontend create something to support success messages
         [HttpGet("{id}", Name = "GetUserById")]
         public async Task<IActionResult> GetUser(Guid id)
         {
@@ -58,8 +70,54 @@ namespace API.Controllers
             return Ok(user);
         }
 
+        // TODO: change RegisterDTO to CreateUserDTO when I add more fields to the user entity
+        // POST: api/users/create
+        [HttpPost]
+        public async Task<IActionResult> CreateUser(RegisterDTO registerDto)
+        {
+            var validationResult = await _registerValidator.ValidateAsync(registerDto);
+            if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
+
+            var password = BCrypt.Net.BCrypt.HashPassword(registerDto.Password);
+            var profile = new
+            {
+                Api = "https://ui-avatars.com/api/?name=",
+                Color = "ffffff",
+                Background = "007bff",
+                Size = 128
+            };
+            var profilePicture = $"{profile.Api}{Uri.EscapeDataString(string.Concat(registerDto.FirstName.AsSpan(0, 1), registerDto.LastName.AsSpan(0, 1)))}&background={profile.Background}&color={profile.Color}&size={profile.Size}";
+            var date = DateTime.UtcNow;
+
+            try
+            {
+                var user = new User
+                {
+                    FirstName = registerDto.FirstName,
+                    LastName = registerDto.LastName,
+                    Email = registerDto.Email,
+                    Password = password,
+                    ProfilePicture = profilePicture,
+                    CreatedAt = date
+                };
+
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+
+                return CreatedAtRoute("GetUserById", new { id = user.UserID }, user);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    ErrorCode = "USER_CREATION_FAILED",
+                    Message = ex.Message
+                });
+            }
+        }
+
+        // TODO: add custom messages for error from ErrorService.cs
         // PUT: api/users/:id
-        // add custom messages for error from ErrorService.cs, in the frontend create something to support success messages
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser([FromRoute] Guid id, [FromBody] UpdateUserDTO updateDto)
         {
@@ -78,9 +136,6 @@ namespace API.Controllers
             if (updateDto.Email != null)
                 user.Email = updateDto.Email;
 
-            if (updateDto.ProfilePicture != null)
-                user.ProfilePicture = updateDto.ProfilePicture;
-
             if (!string.IsNullOrEmpty(updateDto.Password))
                 user.Password = BCrypt.Net.BCrypt.HashPassword(updateDto.Password);
 
@@ -91,14 +146,17 @@ namespace API.Controllers
                 await _context.SaveChangesAsync();
                 return NoContent();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception ex)
             {
-                return Conflict("The record has been modified by another user");
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    ErrorCode = "USER_UPDATE_FAILED",
+                    Message = ex.Message
+                });
             }
         }
 
         // DELETE: api/users/delete/:id
-        // add custom messages for error from ErrorService.cs, in the frontend create something to support success messages
         [HttpDelete]
         public async Task<IActionResult> DeleteUser(Guid id)
         {
@@ -118,32 +176,14 @@ namespace API.Controllers
             }
         }
 
-        // DELETE: api/users/bulk-delete
-        // add custom messages for error from ErrorService.cs, in the frontend create something to support success messages
-        [HttpDelete("bulk-delete")]
-        public async Task<IActionResult> BulkDelete([FromBody] BulkDeleteDTO bulkDeleteDto)
+        // DELETE: api/users/bulk
+        [HttpDelete("bulk")]
+        public async Task<IActionResult> BulkDelete([FromBody] BulkDeleteDTO dto)
         {
-            var validationResult = await _bulkDeleteValidator.ValidateAsync(bulkDeleteDto);
+            var validationResult = await _bulkDeleteValidator.ValidateAsync(dto);
             if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
 
-            var usersToDelete = await _context.Users
-                .Where(u => bulkDeleteDto.Ids.Contains(u.UserID))
-                .ToListAsync();
-
-            // this should be refactored later on so that it doesn't need to be re-written on each bulk delete function (only entityName is dynamic, the rest are static)
-            if (usersToDelete.Count == 0)
-            {
-                return ErrorServices.CreateEntityErrorResponse(
-                    entityName: UserConstants.ENTITY_NAME,
-                    errorCode: "DELETE_BULK_ERROR",
-                    isPlural: true,
-                    statusCode: HttpStatusCode.NotFound);
-            }
-
-            _context.Users.RemoveRange(usersToDelete);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            return await BulkDeleteHelper.ExecuteAsync<User>(_context, dto.Ids, UserConstants.ENTITY_NAME, "UserID");
         }
     }
 }

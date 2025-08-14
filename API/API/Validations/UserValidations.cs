@@ -1,99 +1,74 @@
 ﻿using API.Data.Context;
 using API.Models.DTOs;
-using FluentValidation;
-using Microsoft.AspNetCore.Mvc;
-using System.Linq;
-using API.Validations.Rules;
 using API.Validations.Constants;
+using API.Validations.Rules;
+using FluentValidation;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace API.Validations
 {
-    public class RegisterDTOValidation : AbstractValidator<RegisterDTO>
+    public class CreateUserDTOValidation : AbstractValidator<RegisterDTO>
     {
-        public RegisterDTOValidation()
+        public CreateUserDTOValidation(AppDbContext context)
         {
             RuleFor(x => x.FirstName)
                 .NotEmpty().WithMessage("First name is required")
-                .MaximumLength(50).WithMessage("First name cannot exceed 50 characters");
+                .Matches("^[A-Z][a-z]*$").WithMessage("First name must start with a capital letter and contain only letters")
+                .MaximumLength(UserConstants.MAX_FIRST_NAME_LENGTH).WithMessage($"First name cannot exceed {UserConstants.MAX_FIRST_NAME_LENGTH} characters");
 
             RuleFor(x => x.LastName)
                 .NotEmpty().WithMessage("Last name is required")
-                .MaximumLength(50).WithMessage("Last name cannot exceed 50 characters");
+                .Matches("^[A-Z][a-z]*$").WithMessage("Last name must start with a capital letter and contain only letters")
+                .MaximumLength(UserConstants.MAX_LAST_NAME_LENGTH).WithMessage($"Last name cannot exceed {UserConstants.MAX_LAST_NAME_LENGTH} characters");
 
             RuleFor(x => x.Email)
                 .NotEmpty().WithMessage("Email is required")
                 .EmailAddress().WithMessage("Invalid email format")
-                .MaximumLength(100).WithMessage("Email cannot exceed 100 characters");
+                .MaximumLength(UserConstants.MAX_EMAIL_LENGTH).WithMessage($"Email cannot exceed {UserConstants.MAX_EMAIL_LENGTH} characters")
+                .MustAsync(async (email, cancellation) => await Task.FromResult(EmailValidation.IsEmailUnique(email, context))).WithMessage("Email already exists");
 
             RuleFor(x => x.Password)
-                .ApplyPasswordRulesWithPersonalInfoCheck(
+                .ApplyPasswordRules(
                     x => x.FirstName,
                     x => x.LastName,
                     x => x.Email);
+
+            RuleFor(x => x.ConfirmPassword)
+                .Equal(x => x.Password)
+                .WithMessage("Passwords do not match");
         }
     }
 
+    // TODO: this validation should check if password is valid (same as the one registered with) before updating the user
     public class UpdateUserDTOValidation : AbstractValidator<UpdateUserDTO>
     {
         public UpdateUserDTOValidation()
         {
             RuleFor(x => x.FirstName)
                 .MaximumLength(50).WithMessage("First name cannot exceed 50 characters")
+                .Matches("^[A-Z][a-z]*$").WithMessage("First name must start with a capital letter and contain only letters")
+                .MaximumLength(UserConstants.MAX_FIRST_NAME_LENGTH).WithMessage($"First name cannot exceed {UserConstants.MAX_FIRST_NAME_LENGTH} characters")
                 .When(x => x.FirstName != null);
 
             RuleFor(x => x.LastName)
-                .MaximumLength(50).WithMessage("Last name cannot exceed 50 characters")
+                .Matches("^[A-Z][a-z]*$").WithMessage("Last name must start with a capital letter and contain only letters")
+                .MaximumLength(UserConstants.MAX_LAST_NAME_LENGTH).WithMessage($"Last name cannot exceed {UserConstants.MAX_LAST_NAME_LENGTH} characters")
                 .When(x => x.LastName != null);
 
             RuleFor(x => x.Email)
                 .EmailAddress().WithMessage("Invalid email format")
-                .MaximumLength(100).WithMessage("Email cannot exceed 100 characters")
+                .MaximumLength(UserConstants.MAX_EMAIL_LENGTH).WithMessage($"Email cannot exceed {UserConstants.MAX_EMAIL_LENGTH} characters")
                 .When(x => x.Email != null);
 
             RuleFor(x => x.Password)
                 .MinimumLength(UserConstants.MINIMUM_PASSWORD_LENGTH)
                 .When(x => !string.IsNullOrEmpty(x.Password))
-                .ApplyPasswordRulesWithPersonalInfoCheck(
+                .ApplyPasswordRules(
                     x => x.FirstName ?? "",
                     x => x.LastName ?? "",
                     x => x.Email ?? "")
                 .When(x => !string.IsNullOrEmpty(x.Password));
-        }
-    }
-
-    public class BulkDeleteValidation : AbstractValidator<BulkDeleteDTO>
-    {
-        public BulkDeleteValidation()
-        {
-            RuleFor(x => x.Ids)
-                .NotEmpty().WithMessage("At least one ID is required")
-                .Must(ids => ids.Length <= CoreConstants.MAX_DELETE_LENGTH).WithMessage($"Cannot delete more than {CoreConstants.MAX_DELETE_LENGTH} entries at once");
-        }
-    }
-
-    // add ErrorService support for pagination and then replace the "< 1" from CoreConstants.cs constants
-    public class PaginationValidation
-    {
-        public static void Validate(int page, int pageSize, out IActionResult validationResult)
-        {
-            validationResult = null;
-
-            if (page < 1)
-            {
-                validationResult = new BadRequestObjectResult("Page number must be greater than 0");
-                return;
-            }
-
-            if (pageSize < 1)
-            {
-                validationResult = new BadRequestObjectResult("Page size must be greater than 0");
-                return;
-            }
-
-            if (pageSize > 100)
-            {
-                validationResult = new BadRequestObjectResult("Page size cannot exceed 100");
-            }
         }
     }
 

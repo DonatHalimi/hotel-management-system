@@ -21,7 +21,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddScoped<IValidator<RegisterDTO>, RegisterDTOValidation>();
+builder.Services.AddScoped<IValidator<RegisterDTO>, CreateUserDTOValidation>();
 builder.Services.AddScoped<IValidator<UpdateUserDTO>, UpdateUserDTOValidation>();
 builder.Services.AddScoped<IValidator<BulkDeleteDTO>, BulkDeleteValidation>();
 

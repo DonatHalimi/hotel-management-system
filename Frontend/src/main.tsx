@@ -6,16 +6,16 @@ import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import App from './App.tsx'
 import { PrimeReactProvider } from 'primereact/api';
-
-const value = {
-  ripple: true,
-  unstyled: false,
-};
+import { queryClient } from './config/reactQuery.ts';
+import { primeReactConfig } from './config/primeReact.ts';
+import { QueryClientProvider } from '@tanstack/react-query';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <PrimeReactProvider value={value}>
-      <App />
-    </PrimeReactProvider>
+    <QueryClientProvider client={queryClient}>
+      <PrimeReactProvider value={primeReactConfig}>
+        <App />
+      </PrimeReactProvider>
+    </QueryClientProvider>
   </StrictMode>,
-)
+);
