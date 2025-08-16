@@ -1,0 +1,62 @@
+﻿using API.Data.Context;
+using API.Models.DTOs;
+using API.Validations.Constants;
+using API.Validations.Rules;
+using FluentValidation;
+using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
+
+namespace API.Validations
+{
+    public class RegisterUserDTOValidation : AbstractValidator<RegisterDTO>
+    {
+        public RegisterUserDTOValidation(AppDbContext context)
+        {
+            RuleFor(x => x.FirstName)
+                .NotEmpty().WithMessage("First name is required")
+                .Matches("^[A-Z][a-z]*$").WithMessage("First name must start with a capital letter and contain only letters")
+                .MaximumLength(UserConstants.MAX_FIRST_NAME_LENGTH).WithMessage($"First name cannot exceed {UserConstants.MAX_FIRST_NAME_LENGTH} characters");
+
+            RuleFor(x => x.LastName)
+                .NotEmpty().WithMessage("Last name is required")
+                .Matches("^[A-Z][a-z]*$").WithMessage("Last name must start with a capital letter and contain only letters")
+                .MaximumLength(UserConstants.MAX_LAST_NAME_LENGTH).WithMessage($"Last name cannot exceed {UserConstants.MAX_LAST_NAME_LENGTH} characters");
+
+            RuleFor(x => x.Email)
+                .NotEmpty().WithMessage("Email is required")
+                .EmailAddress().WithMessage("Invalid email format")
+                .MaximumLength(UserConstants.MAX_EMAIL_LENGTH).WithMessage($"Email cannot exceed {UserConstants.MAX_EMAIL_LENGTH} characters")
+                .MustAsync(async (email, cancellation) => await Task.FromResult(EmailValidation.DoesEmailExist(email, context))).WithMessage("Email already exists");
+
+            RuleFor(x => x.Password)
+                .ApplyPasswordRules("Password", x => x.FirstName, x => x.LastName, x => x.Email);
+
+            RuleFor(x => x.ConfirmPassword)
+                .Equal(x => x.Password)
+                .WithMessage("Passwords do not match");
+        }
+    }
+
+    public class LoginDTOValidation : AbstractValidator<LoginDTO>
+    {
+        private readonly AppDbContext _context;
+
+        public LoginDTOValidation(AppDbContext context)
+        {
+            _context = context;
+
+            RuleFor(x => x.Email)
+                .NotEmpty().WithMessage("Email is required")
+                .EmailAddress().WithMessage("Invalid email format");
+
+            RuleFor(x => x.Password)
+                .NotEmpty().WithMessage("Password is required")
+                .MustAsync(async (dto, password, cancellation) =>
+                {
+                    var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+                    return PasswordValidation.IsPasswordValid(user, password);
+                })
+                .WithMessage("Password is incorrect");
+        }
+    }
+}

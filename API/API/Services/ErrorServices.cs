@@ -12,7 +12,7 @@ namespace API.Services
 
             var messages = new Dictionary<string, string>
             {
-                {"UPDATE_ERROR", $"Failed to update {displayName.ToLower()}"},
+                // TODO: {"UPDATE_ERROR", $"Failed to update {displayName.ToLower()}"},
                 {"DELETE_ERROR", $"Failed to delete {displayName.ToLower()}"},
                 {"DELETE_BULK_ERROR", $"No matching {displayName.ToLower()} found"},
             };

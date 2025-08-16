@@ -1,5 +1,6 @@
 ﻿using API.Data.Context;
 using API.Models.DTOs;
+using API.Models.Entities;
 using API.Validations.Constants;
 using API.Validations.Rules;
 using FluentValidation;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace API.Validations
 {
-    public class CreateUserDTOValidation : AbstractValidator<RegisterDTO>
+    public class CreateUserDTOValidation : AbstractValidator<CreateUserDTO>
     {
         public CreateUserDTOValidation(AppDbContext context)
         {
@@ -26,24 +27,20 @@ namespace API.Validations
                 .NotEmpty().WithMessage("Email is required")
                 .EmailAddress().WithMessage("Invalid email format")
                 .MaximumLength(UserConstants.MAX_EMAIL_LENGTH).WithMessage($"Email cannot exceed {UserConstants.MAX_EMAIL_LENGTH} characters")
-                .MustAsync(async (email, cancellation) => await Task.FromResult(EmailValidation.IsEmailUnique(email, context))).WithMessage("Email already exists");
+                .MustAsync(async (email, cancellation) => await Task.FromResult(EmailValidation.DoesEmailExist(email, context))).WithMessage("Email already exists");
+
+            RuleFor(x => x.RoleID)
+                .NotEmpty().WithMessage("Role is required")
+                .MustAsync(async (roleId, cancellation) => await RoleValidation.IsRoleValid(roleId, context)).WithMessage("Role must be valid");
 
             RuleFor(x => x.Password)
-                .ApplyPasswordRules(
-                    x => x.FirstName,
-                    x => x.LastName,
-                    x => x.Email);
-
-            RuleFor(x => x.ConfirmPassword)
-                .Equal(x => x.Password)
-                .WithMessage("Passwords do not match");
+                .ApplyPasswordRules("Password", x => x.FirstName, x => x.LastName, x => x.Email);
         }
     }
 
-    // TODO: this validation should check if password is valid (same as the one registered with) before updating the user
     public class UpdateUserDTOValidation : AbstractValidator<UpdateUserDTO>
     {
-        public UpdateUserDTOValidation()
+        public UpdateUserDTOValidation(AppDbContext context)
         {
             RuleFor(x => x.FirstName)
                 .MaximumLength(50).WithMessage("First name cannot exceed 50 characters")
@@ -57,26 +54,37 @@ namespace API.Validations
                 .When(x => x.LastName != null);
 
             RuleFor(x => x.Email)
+                .Cascade(CascadeMode.Stop)
                 .EmailAddress().WithMessage("Invalid email format")
                 .MaximumLength(UserConstants.MAX_EMAIL_LENGTH).WithMessage($"Email cannot exceed {UserConstants.MAX_EMAIL_LENGTH} characters")
-                .When(x => x.Email != null);
+                .MustAsync(async (email, cancellation) => await Task.FromResult(EmailValidation.DoesEmailExist(email, context))).WithMessage("Email already exists")
+                .When(x => !string.IsNullOrEmpty(x.Email));
 
             RuleFor(x => x.Password)
-                .MinimumLength(UserConstants.MINIMUM_PASSWORD_LENGTH)
-                .When(x => !string.IsNullOrEmpty(x.Password))
-                .ApplyPasswordRules(
-                    x => x.FirstName ?? "",
-                    x => x.LastName ?? "",
-                    x => x.Email ?? "")
-                .When(x => !string.IsNullOrEmpty(x.Password));
+                .NotEmpty().WithMessage("Current password is required");
+
+            RuleFor(x => x.NewPassword)
+                .ApplyPasswordRules("New Password", x => x.FirstName, x => x.LastName, x => x.Email)
+                .When(x => !string.IsNullOrEmpty(x.NewPassword));
         }
     }
 
     public static class EmailValidation
     {
-        public static bool IsEmailUnique(string email, AppDbContext context)
+        public static bool DoesEmailExist(string email, AppDbContext context)
         {
             return !context.Users.Any(u => u.Email == email);
+        }
+    }
+
+    public static class PasswordValidation
+    {
+        public static bool IsPasswordValid(User user, string password)
+        {
+            if (user == null || string.IsNullOrEmpty(user.Password))
+                return false;
+
+            return BCrypt.Net.BCrypt.Verify(password, user.Password);
         }
     }
 }

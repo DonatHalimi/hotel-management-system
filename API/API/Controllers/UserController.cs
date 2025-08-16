@@ -1,4 +1,5 @@
-﻿using API.Data.Context;
+﻿using API.Attributes;
+using API.Data.Context;
 using API.Helpers;
 using API.Models.DTOs;
 using API.Models.Entities;
@@ -16,15 +17,20 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/users")]
-    public class UserController(AppDbContext context, IValidator<RegisterDTO> registerValidator, IValidator<UpdateUserDTO> updateUserDtoValidator, IValidator<BulkDeleteDTO> bulkDeleteValidator) : ControllerBase
+    [AdminOnly]
+    public class UserController(
+        AppDbContext context,
+        IValidator<CreateUserDTO> createUserDtoValidator,
+        IValidator<UpdateUserDTO> updateUserDtoValidator,
+        IValidator<BulkDeleteDTO> bulkDeleteValidator) : ControllerBase
     {
         private readonly AppDbContext _context = context;
+
+        private readonly IValidator<CreateUserDTO> _createUserDtoValidator = createUserDtoValidator;
         private readonly IValidator<UpdateUserDTO> _updateUserDtoValidator = updateUserDtoValidator;
         private readonly IValidator<BulkDeleteDTO> _bulkDeleteValidator = bulkDeleteValidator;
-        private readonly IValidator<RegisterDTO> _registerValidator = registerValidator;
 
         // GET: api/users
-        [HttpGet]
         [HttpGet]
         public async Task<IActionResult> GetUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? search = null)
         {
@@ -52,6 +58,18 @@ namespace API.Controllers
                 .OrderBy(u => u.FirstName)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
+                .Select(u => new
+                {
+                    u.UserID,
+                    u.FirstName,
+                    u.LastName,
+                    u.Email,
+                    u.ProfilePicture,
+                    u.FullName,
+                    u.CreatedAt,
+                    u.UpdatedAt,
+                    Role = u.Role.Name
+                })
                 .ToListAsync();
 
             Response.Headers.Append("X-Total-Count", totalUsers.ToString());
@@ -60,7 +78,7 @@ namespace API.Controllers
             return Ok(users);
         }
 
-        // GET: api/users/:id
+        // GET: api/users/{id}
         [HttpGet("{id}", Name = "GetUserById")]
         public async Task<IActionResult> GetUser(Guid id)
         {
@@ -70,54 +88,34 @@ namespace API.Controllers
             return Ok(user);
         }
 
-        // TODO: change RegisterDTO to CreateUserDTO when I add more fields to the user entity
-        // POST: api/users/create
         [HttpPost]
-        public async Task<IActionResult> CreateUser(RegisterDTO registerDto)
+        public async Task<IActionResult> CreateUser(CreateUserDTO dto)
         {
-            var validationResult = await _registerValidator.ValidateAsync(registerDto);
+            var validationResult = await _createUserDtoValidator.ValidateAsync(dto);
             if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
 
-            var password = BCrypt.Net.BCrypt.HashPassword(registerDto.Password);
-            var profile = new
+            var passwordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+            var profilePicture = ProfilePictureHelper.Generate(dto.FirstName, dto.LastName);
+            var roleId = dto.RoleID ?? Guid.Empty;
+
+            var user = new User
             {
-                Api = "https://ui-avatars.com/api/?name=",
-                Color = "ffffff",
-                Background = "007bff",
-                Size = 128
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                Email = dto.Email,
+                Password = passwordHash,
+                ProfilePicture = profilePicture,
+                RoleID = roleId
             };
-            var profilePicture = $"{profile.Api}{Uri.EscapeDataString(string.Concat(registerDto.FirstName.AsSpan(0, 1), registerDto.LastName.AsSpan(0, 1)))}&background={profile.Background}&color={profile.Color}&size={profile.Size}";
-            var date = DateTime.UtcNow;
 
-            try
-            {
-                var user = new User
-                {
-                    FirstName = registerDto.FirstName,
-                    LastName = registerDto.LastName,
-                    Email = registerDto.Email,
-                    Password = password,
-                    ProfilePicture = profilePicture,
-                    CreatedAt = date
-                };
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
 
-                _context.Users.Add(user);
-                await _context.SaveChangesAsync();
-
-                return CreatedAtRoute("GetUserById", new { id = user.UserID }, user);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new
-                {
-                    ErrorCode = "USER_CREATION_FAILED",
-                    Message = ex.Message
-                });
-            }
+            return CreatedAtRoute("GetUserById", new { id = user.UserID }, user);
         }
 
         // TODO: add custom messages for error from ErrorService.cs
-        // PUT: api/users/:id
+        // PUT: api/users/{id}
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser([FromRoute] Guid id, [FromBody] UpdateUserDTO updateDto)
         {
@@ -126,6 +124,9 @@ namespace API.Controllers
 
             var user = await _context.Users.FindAsync(id);
             if (user == null) return NotFound();
+
+            if (!PasswordValidation.IsPasswordValid(user, updateDto.Password))
+                return BadRequest(new { Error = "Current password is incorrect" });
 
             if (updateDto.FirstName != null)
                 user.FirstName = updateDto.FirstName;
@@ -138,6 +139,12 @@ namespace API.Controllers
 
             if (!string.IsNullOrEmpty(updateDto.Password))
                 user.Password = BCrypt.Net.BCrypt.HashPassword(updateDto.Password);
+
+            if (!string.IsNullOrEmpty(updateDto.NewPassword))
+                user.Password = BCrypt.Net.BCrypt.HashPassword(updateDto.NewPassword);
+
+            if (updateDto.RoleID.HasValue)
+                user.RoleID = updateDto.RoleID.Value;
 
             user.UpdatedAt = DateTime.UtcNow;
 
@@ -156,11 +163,11 @@ namespace API.Controllers
             }
         }
 
-        // DELETE: api/users/delete/:id
-        [HttpDelete]
+        // DELETE: api/users/{id}
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(Guid id)
         {
-            var user = _context.Users.Find(id);
+            var user = await _context.Users.FindAsync(id);
             if (user == null) return NotFound();
 
             _context.Users.Remove(user);
@@ -172,7 +179,11 @@ namespace API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    ErrorCode = "USER_DELETE_FAILED",
+                    Message = ex.Message
+                });
             }
         }
 

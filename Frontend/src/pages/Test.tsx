@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { Button } from 'primereact/button'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 type Post = {
     userId: number

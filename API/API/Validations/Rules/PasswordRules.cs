@@ -2,7 +2,6 @@
 using FluentValidation;
 using System;
 using System.Linq;
-using System.Net.NetworkInformation;
 
 namespace API.Validations.Rules
 {
@@ -10,38 +9,31 @@ namespace API.Validations.Rules
     {
         public static IRuleBuilderOptions<T, string> ApplyPasswordRules<T>(
             this IRuleBuilder<T, string> ruleBuilder,
+            string passwordType = "Password",
+            Func<T, string> firstNameSelector = null,
+            Func<T, string> lastNameSelector = null,
+            Func<T, string> emailSelector = null,
             int minimumLength = UserConstants.MINIMUM_PASSWORD_LENGTH)
         {
-            return ruleBuilder
-                .NotEmpty().WithMessage("Password is required")
-                .MinimumLength(minimumLength).WithMessage($"Password must be at least {minimumLength} characters")
-                .Matches("[A-Z]").WithMessage("Password must contain at least one uppercase letter")
-                .Matches("[a-z]").WithMessage("Password must contain at least one lowercase letter")
-                .Matches("[0-9]").WithMessage("Password must contain at least one number")
-                .Matches("[^a-zA-Z0-9]").WithMessage("Password must contain at least one special character")
-                .Must(BeUniqueChars).WithMessage($"Password must contain at least {minimumLength} unique characters");
-        }
+            var options = ruleBuilder
+                .NotEmpty().WithMessage($"{passwordType} is required")
+                .MinimumLength(minimumLength).WithMessage($"{passwordType} must be at least {minimumLength} characters")
+                .Matches("[A-Z]").WithMessage($"{passwordType} must contain at least one uppercase letter")
+                .Matches("[a-z]").WithMessage($"{passwordType} must contain at least one lowercase letter")
+                .Matches("[0-9]").WithMessage($"{passwordType} must contain at least one number")
+                .Matches("[^a-zA-Z0-9]").WithMessage($"{passwordType} must contain at least one special character");
 
-        public static IRuleBuilderOptions<T, string> ApplyPasswordRules<T>(
-            this IRuleBuilder<T, string> ruleBuilder,
-            Func<T, string> firstNameSelector,
-            Func<T, string> lastNameSelector,
-            Func<T, string> emailSelector,
-            int minimumLength = UserConstants.MINIMUM_PASSWORD_LENGTH)
-        {
-            return ruleBuilder
-                .ApplyPasswordRules(minimumLength)
-                .Must((model, password) => !ContainsPersonalInfo(
+            if (firstNameSelector != null && lastNameSelector != null && emailSelector != null)
+            {
+                options = options.Must((model, password) => !ContainsPersonalInfo(
                     password,
                     firstNameSelector(model),
                     lastNameSelector(model),
                     emailSelector(model)))
-                .WithMessage("Password cannot contain your name or email");
-        }
+                    .WithMessage($"{passwordType} cannot contain your first name, last name or email");
+            }
 
-        private static bool BeUniqueChars(string password)
-        {
-            return password?.Distinct().Count() >= UserConstants.MINIMUM_PASSWORD_LENGTH;
+            return options;
         }
 
         private static bool ContainsPersonalInfo(
