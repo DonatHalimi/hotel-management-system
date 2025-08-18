@@ -1,28 +1,13 @@
-import { useNavigate } from 'react-router-dom';
-import { useToast } from '../contexts/ToastContext'
-import { Button } from 'primereact/button'
+// import Footer from "../components/Footer"
+import Navbar from "../components/navbar/Navbar"
 
 const Home = () => {
-    const { toast } = useToast();
-    const navigate = useNavigate();
-
-    const showToast = () => {
-        toast({
-            severity: 'success',
-            summary: 'Success',
-            detail: 'Success Message',
-            life: 3000,
-        });
-    };
-
     return (
-        <div>
-            <Button onClick={() => navigate('/posts')}>Posts</Button>
-            <div>
-                <Button label="Show Toast" onClick={showToast}></Button>
-            </div>
-        </div>
-    )
-}
+        <>
+            <Navbar />
+            {/* <Footer /> */}
+        </>
+    );
+};
 
 export default Home;

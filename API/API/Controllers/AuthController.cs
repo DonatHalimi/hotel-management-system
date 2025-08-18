@@ -3,7 +3,6 @@ using API.Helpers;
 using API.Models.DTOs;
 using API.Models.Entities;
 using API.Services;
-using API.Validations;
 using API.Validations.Constants;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
@@ -19,29 +18,20 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/auth")]
-    public class AuthController : ControllerBase
+    public class AuthController(
+    AppDbContext context,
+     IValidator<RegisterDTO> registerValidator,
+     IValidator<LoginDTO> loginValidator,
+     JwtService jwtService) : ControllerBase
     {
-        private readonly AppDbContext _context;
-        private readonly IValidator<RegisterDTO> _registerValidator;
-        private readonly IValidator<LoginDTO> _loginValidator;
-        private readonly JwtService _jwtService;
-
-        public AuthController(AppDbContext context, IValidator<RegisterDTO> registerValidator, IValidator<LoginDTO> loginValidator, JwtService jwtService)
-        {
-            _context = context;
-            _registerValidator = registerValidator;
-            _loginValidator = loginValidator;
-            _jwtService = jwtService;
-        }
-
         // POST: api/auth/register
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterDTO dto)
         {
-            var validation = await _registerValidator.ValidateAsync(dto);
+            var validation = await registerValidator.ValidateAsync(dto);
             if (!validation.IsValid) return BadRequest(validation.Errors);
 
-            var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == RoleConstants.DEFAULT_ROLE_NAME);
+            var role = await context.Roles.FirstOrDefaultAsync(r => r.Name == RoleConstants.DEFAULT_ROLE_NAME);
             if (role == null)
                 return StatusCode(StatusCodes.Status500InternalServerError, new
                 {
@@ -62,8 +52,8 @@ namespace API.Controllers
                 RoleID = role.RoleID
             };
 
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            context.Users.Add(user);
+            await context.SaveChangesAsync();
 
             return CreatedAtRoute("GetUserById", new { id = user.UserID }, new
             {
@@ -80,10 +70,10 @@ namespace API.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDTO loginDto)
         {
-            var validationResult = await _loginValidator.ValidateAsync(loginDto);
+            var validationResult = await loginValidator.ValidateAsync(loginDto);
             if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
 
-            var user = await _context.Users
+            var user = await context.Users
                 .Where(u => u.Email == loginDto.Email)
                 .Select(u => new
                 {
@@ -98,10 +88,10 @@ namespace API.Controllers
 
             if (user == null) return Unauthorized(new { Message = "Invalid credentials" });
 
-            var accessToken = _jwtService.GenerateAccessToken(user.UserID, user.Email, user.Role ?? "");
-            var (refreshToken, refreshExpiry) = _jwtService.GenerateRefreshToken();
+            var accessToken = jwtService.GenerateAccessToken(user.UserID, user.Email, user.Role ?? "");
+            var (refreshToken, refreshExpiry) = jwtService.GenerateRefreshToken();
 
-            await _context.Users
+            await context.Users
                 .Where(u => u.UserID == user.UserID)
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(u => u.RefreshToken, refreshToken)
@@ -120,9 +110,8 @@ namespace API.Controllers
         [HttpPost("refresh")]
         public async Task<IActionResult> Refresh([FromBody] RefreshRequest model)
         {
-            var principal = _jwtService.GetPrincipalFromExpiredToken(model.AccessToken);
-            if (principal == null)
-                return BadRequest(new { Message = "Invalid access token" });
+            var principal = jwtService.GetPrincipalFromExpiredToken(model.AccessToken);
+            if (principal == null) return BadRequest(new { Message = "Invalid access token" });
 
             var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier) ??
                              principal.FindFirst(JwtRegisteredClaimNames.Sub);
@@ -130,17 +119,17 @@ namespace API.Controllers
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
                 return BadRequest(new { Message = "Invalid token claims" });
 
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserID == userId);
+            var user = await context.Users.FirstOrDefaultAsync(u => u.UserID == userId);
             if (user == null || user.RefreshToken != model.RefreshToken || user.RefreshTokenExpiry <= DateTime.UtcNow)
                 return Unauthorized(new { Message = "Refresh token invalid or expired" });
 
-            var newAccessToken = _jwtService.GenerateAccessToken(user.UserID, user.Email, user.Role?.Name ?? "");
-            var (newRefreshToken, newRefreshExpiry) = _jwtService.GenerateRefreshToken();
+            var newAccessToken = jwtService.GenerateAccessToken(user.UserID, user.Email, user.Role?.Name ?? "");
+            var (newRefreshToken, newRefreshExpiry) = jwtService.GenerateRefreshToken();
 
             user.RefreshToken = newRefreshToken;
             user.RefreshTokenExpiry = newRefreshExpiry;
-            _context.Users.Update(user);
-            await _context.SaveChangesAsync();
+            context.Users.Update(user);
+            await context.SaveChangesAsync();
 
             return Ok(new
             {
@@ -153,13 +142,13 @@ namespace API.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> Logout([FromBody] LogoutRequest model)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserID == model.UserId);
+            var user = await context.Users.FirstOrDefaultAsync(u => u.UserID == model.UserId);
             if (user == null) return NotFound();
 
             user.RefreshToken = null;
             user.RefreshTokenExpiry = null;
-            _context.Users.Update(user);
-            await _context.SaveChangesAsync();
+            context.Users.Update(user);
+            await context.SaveChangesAsync();
 
             return NoContent();
         }

@@ -24,19 +24,14 @@ namespace API.Controllers
         IValidator<UpdateRoleDTO> updateValidator,
         IValidator<BulkDeleteDTO> bulkDeleteValidator) : ControllerBase
     {
-        private readonly AppDbContext _context = context;
-        private readonly IValidator<CreateRoleDTO> _createValidator = createValidator;
-        private readonly IValidator<UpdateRoleDTO> _updateValidator = updateValidator;
-        private readonly IValidator<BulkDeleteDTO> _bulkDeleteValidator = bulkDeleteValidator;
-
         // GET: api/roles
         [HttpGet]
         public async Task<IActionResult> GetRoles([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? search = null)
         {
-            PaginationValidation.Validate(page, pageSize, search, out var validationResult);
+            PaginationValidation.Validate(page, pageSize, search ?? string.Empty, out var validationResult);
             if (validationResult != null) return validationResult;
 
-            var query = _context.Roles.AsQueryable();
+            var query = context.Roles.AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(search))
             {
@@ -47,19 +42,17 @@ namespace API.Controllers
             }
 
             var totalRoles = await query.CountAsync();
-            if (totalRoles == 0) return NotFound();
+            var (totalPages, errorResult) = PaginationHelper.GetPaginationInfo(totalRoles, pageSize, page);
 
-            var totalPages = (int)Math.Ceiling(totalRoles / (double)pageSize);
-            if (page > totalPages) return NotFound("Page number exceeds total pages.");
+            if (errorResult != null) return errorResult;
+
             var roles = await query
                 .OrderBy(r => r.Name)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
 
-            Response.Headers.Append("X-Total-Count", totalRoles.ToString());
-            Response.Headers.Append("X-Total-Pages", totalPages.ToString());
-
+            PaginationHelper.AppendPaginationHeaders(Response, totalRoles, totalPages);
             return Ok(roles);
         }
 
@@ -67,7 +60,7 @@ namespace API.Controllers
         [HttpGet("{id}", Name = "GetRoleById")]
         public async Task<IActionResult> GetRoleById(Guid id)
         {
-            var role = await _context.Roles.FindAsync(id);
+            var role = await context.Roles.FindAsync(id);
             if (role == null) return NotFound();
             return Ok(role);
         }
@@ -76,7 +69,7 @@ namespace API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateRole(CreateRoleDTO roleDto)
         {
-            var validationResult = await _createValidator.ValidateAsync(roleDto);
+            var validationResult = await createValidator.ValidateAsync(roleDto);
             if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
 
             try
@@ -87,9 +80,9 @@ namespace API.Controllers
                     Description = roleDto.Description,
                 };
 
-                _context.Roles.Add(role);
+                context.Roles.Add(role);
 
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
                 return CreatedAtAction(nameof(GetRoleById), new { id = role.RoleID }, role);
             }
             catch (Exception ex)
@@ -106,10 +99,10 @@ namespace API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateRole([FromRoute] Guid id, [FromBody] UpdateRoleDTO updateDto)
         {
-            var validationResult = await _updateValidator.ValidateAsync(updateDto);
+            var validationResult = await updateValidator.ValidateAsync(updateDto);
             if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
 
-            var role = await _context.Roles.FindAsync(id);
+            var role = await context.Roles.FindAsync(id);
             if (role == null) return NotFound();
 
             if (updateDto.Name != null)
@@ -122,7 +115,7 @@ namespace API.Controllers
 
             try
             {
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
                 return NoContent();
             }
             catch (Exception ex)
@@ -139,14 +132,14 @@ namespace API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteRole(Guid id)
         {
-            var role = await _context.Roles.FindAsync(id);
+            var role = await context.Roles.FindAsync(id);
             if (role == null) return NotFound();
 
-            _context.Roles.Remove(role);
+            context.Roles.Remove(role);
 
             try
             {
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
                 return NoContent();
             }
             catch (Exception ex)
@@ -163,10 +156,10 @@ namespace API.Controllers
         [HttpDelete("bulk")]
         public async Task<IActionResult> BulkDelete([FromBody] BulkDeleteDTO dto)
         {
-            var validationResult = await _bulkDeleteValidator.ValidateAsync(dto);
+            var validationResult = await bulkDeleteValidator.ValidateAsync(dto);
             if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
 
-            return await BulkDeleteHelper.ExecuteAsync<Role>(_context, dto.Ids, RoleConstants.ENTITY_NAME, "RoleID");
+            return await BulkDeleteHelper.ExecuteAsync<Role>(context, dto.Ids, RoleConstants.ENTITY_NAME, "RoleID");
         }
     }
 }

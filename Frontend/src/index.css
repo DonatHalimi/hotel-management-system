@@ -1,6 +1,9 @@
-html {
-  font-size: 0.9rem;
-  scroll-behavior: smooth;
+@import "tailwindcss";
+
+html,
+body,
+#root {
+  @apply font-sans bg-gray-50;
 }
 
 *::-webkit-scrollbar {
@@ -24,4 +27,49 @@ html {
 
 *::-webkit-scrollbar-corner {
   background-color: #FFFFFF;
+}
+
+.p-inputtext,
+.p-password input,
+.p-inputtextarea,
+.p-dropdown,
+.p-multiselect,
+.p-calendar input,
+.p-inputnumber input {
+  border-color: #d1d5db !important;
+  background-color: #ffffff !important;
+}
+
+.p-inputtext:hover,
+.p-password input:hover,
+.p-inputtextarea:hover,
+.p-dropdown:hover,
+.p-multiselect:hover,
+.p-calendar input:hover,
+.p-inputnumber input:hover {
+  border-color: #9ca3af !important;
+}
+
+.p-inputtext:focus,
+.p-password input:focus,
+.p-inputtextarea:focus,
+.p-dropdown:focus,
+.p-multiselect:focus,
+.p-calendar input:focus,
+.p-inputnumber input:focus {
+  border-color: #6b7280 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.focus\:shadow-lg:focus,
+.focus\:shadow-xl:focus,
+[class*="focus:shadow"]:focus {
+  box-shadow: none !important;
+}
+
+.p-menubar .p-component {
+  border: none !important;
+  height: auto !important;
+  padding: 0 !important;
 }

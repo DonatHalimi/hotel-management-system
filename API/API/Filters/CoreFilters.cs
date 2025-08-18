@@ -27,6 +27,7 @@ namespace API.Filters
                         g => g
                             .Select(e => e.GetType().GetProperty("ErrorMessage")?.GetValue(e)?.ToString())
                             .Where(msg => !string.IsNullOrWhiteSpace(msg))
+                            .Select(msg => msg!)
                             .ToArray()
                     ),
 

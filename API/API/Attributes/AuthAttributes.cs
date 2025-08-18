@@ -17,47 +17,35 @@ namespace API.Attributes
         {
             var user = context.HttpContext.User;
 
-            if (user?.Identity == null || !user.Identity.IsAuthenticated)
+            if (!IsAuthenticated(user))
             {
-                context.Result = new UnauthorizedObjectResult(new
-                {
-                    error = "Authentication required",
-                    message = "You must be logged in to access this resource"
-                });
+                context.Result = CreateErrorResult(401, "Authentication required", "You must be logged in to access this resource");
                 return;
             }
 
-            if (_roles.Length > 0)
+            if (_roles.Length > 0 && !IsAuthorized(user))
             {
                 var userRole = user.FindFirst(ClaimTypes.Role)?.Value;
+                var (statusCode, error, message) = string.IsNullOrEmpty(userRole)
+                    ? (403, "No role assigned", "User has no role assigned")
+                    : (403, "Access denied", "Unauthorized access to this resource");
 
-                if (string.IsNullOrEmpty(userRole))
-                {
-                    context.Result = new ObjectResult(new
-                    {
-                        error = "No role assigned",
-                        message = "User has no role assigned"
-                    })
-                    {
-                        StatusCode = 403
-                    };
-                    return;
-                }
-
-                if (!_roles.Contains(userRole, StringComparer.OrdinalIgnoreCase))
-                {
-                    context.Result = new ObjectResult(new
-                    {
-                        error = "Access denied",
-                        message = "Unauthorized access to this resource"
-                    })
-                    {
-                        StatusCode = 403
-                    };
-                    return;
-                }
+                context.Result = CreateErrorResult(statusCode, error, message);
             }
         }
+
+        private static bool IsAuthenticated(ClaimsPrincipal user) =>
+            user?.Identity?.IsAuthenticated == true;
+
+        private bool IsAuthorized(ClaimsPrincipal user)
+        {
+            var userRole = user.FindFirst(ClaimTypes.Role)?.Value;
+            return !string.IsNullOrEmpty(userRole) &&
+                   _roles.Contains(userRole, StringComparer.OrdinalIgnoreCase);
+        }
+
+        private static ObjectResult CreateErrorResult(int statusCode, string error, string message) =>
+            new(new { error, message }) { StatusCode = statusCode };
     }
 
     public class AdminOnlyAttribute : AuthAttribute

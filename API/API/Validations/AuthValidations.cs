@@ -47,10 +47,12 @@ namespace API.Validations
 
             RuleFor(x => x.Email)
                 .NotEmpty().WithMessage("Email is required")
-                .EmailAddress().WithMessage("Invalid email format");
+                .EmailAddress().WithMessage("Invalid email format")
+                .MaximumLength(UserConstants.MAX_EMAIL_LENGTH).WithMessage($"Email cannot exceed {UserConstants.MAX_EMAIL_LENGTH} characters");
 
             RuleFor(x => x.Password)
                 .NotEmpty().WithMessage("Password is required")
+                .ApplyPasswordRules("Password", x => x.Email)
                 .MustAsync(async (dto, password, cancellation) =>
                 {
                     var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);

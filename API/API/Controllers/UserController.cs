@@ -19,25 +19,19 @@ namespace API.Controllers
     [Route("api/users")]
     [AdminOnly]
     public class UserController(
-        AppDbContext context,
-        IValidator<CreateUserDTO> createUserDtoValidator,
-        IValidator<UpdateUserDTO> updateUserDtoValidator,
-        IValidator<BulkDeleteDTO> bulkDeleteValidator) : ControllerBase
+     AppDbContext context,
+     IValidator<CreateUserDTO> createValidator,
+     IValidator<UpdateUserDTO> updateValidator,
+     IValidator<BulkDeleteDTO> bulkDeleteValidator) : ControllerBase
     {
-        private readonly AppDbContext _context = context;
-
-        private readonly IValidator<CreateUserDTO> _createUserDtoValidator = createUserDtoValidator;
-        private readonly IValidator<UpdateUserDTO> _updateUserDtoValidator = updateUserDtoValidator;
-        private readonly IValidator<BulkDeleteDTO> _bulkDeleteValidator = bulkDeleteValidator;
-
         // GET: api/users
         [HttpGet]
         public async Task<IActionResult> GetUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? search = null)
         {
-            PaginationValidation.Validate(page, pageSize, search, out var validationResult);
+            PaginationValidation.Validate(page, pageSize, search ?? string.Empty, out var validationResult);
             if (validationResult != null) return validationResult;
 
-            var query = _context.Users.AsQueryable();
+            var query = context.Users.AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(search))
             {
@@ -49,10 +43,8 @@ namespace API.Controllers
             }
 
             var totalUsers = await query.CountAsync();
-            if (totalUsers == 0) return NotFound();
-
-            var totalPages = (int)Math.Ceiling(totalUsers / (double)pageSize);
-            if (page > totalPages) return NotFound("Page number exceeds total pages.");
+            var (totalPages, errorResult) = PaginationHelper.GetPaginationInfo(totalUsers, pageSize, page);
+            if (errorResult != null) return errorResult;
 
             var users = await query
                 .OrderBy(u => u.FirstName)
@@ -72,9 +64,7 @@ namespace API.Controllers
                 })
                 .ToListAsync();
 
-            Response.Headers.Append("X-Total-Count", totalUsers.ToString());
-            Response.Headers.Append("X-Total-Pages", totalPages.ToString());
-
+            PaginationHelper.AppendPaginationHeaders(Response, totalUsers, totalPages);
             return Ok(users);
         }
 
@@ -82,34 +72,34 @@ namespace API.Controllers
         [HttpGet("{id}", Name = "GetUserById")]
         public async Task<IActionResult> GetUser(Guid id)
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = await context.Users.FindAsync(id);
             if (user == null) return NotFound();
 
             return Ok(user);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateUser(CreateUserDTO dto)
+        public async Task<IActionResult> CreateUser(CreateUserDTO createDto)
         {
-            var validationResult = await _createUserDtoValidator.ValidateAsync(dto);
+            var validationResult = await createValidator.ValidateAsync(createDto);
             if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
 
-            var passwordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
-            var profilePicture = ProfilePictureHelper.Generate(dto.FirstName, dto.LastName);
-            var roleId = dto.RoleID ?? Guid.Empty;
+            var passwordHash = BCrypt.Net.BCrypt.HashPassword(createDto.Password);
+            var profilePicture = ProfilePictureHelper.Generate(createDto.FirstName, createDto.LastName);
+            var roleId = createDto.RoleID ?? Guid.Empty;
 
             var user = new User
             {
-                FirstName = dto.FirstName,
-                LastName = dto.LastName,
-                Email = dto.Email,
+                FirstName = createDto.FirstName,
+                LastName = createDto.LastName,
+                Email = createDto.Email,
                 Password = passwordHash,
                 ProfilePicture = profilePicture,
                 RoleID = roleId
             };
 
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            context.Users.Add(user);
+            await context.SaveChangesAsync();
 
             return CreatedAtRoute("GetUserById", new { id = user.UserID }, user);
         }
@@ -119,10 +109,10 @@ namespace API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser([FromRoute] Guid id, [FromBody] UpdateUserDTO updateDto)
         {
-            var validationResult = await _updateUserDtoValidator.ValidateAsync(updateDto);
+            var validationResult = await updateValidator.ValidateAsync(updateDto);
             if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
 
-            var user = await _context.Users.FindAsync(id);
+            var user = await context.Users.FindAsync(id);
             if (user == null) return NotFound();
 
             if (!PasswordValidation.IsPasswordValid(user, updateDto.Password))
@@ -150,7 +140,7 @@ namespace API.Controllers
 
             try
             {
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
                 return NoContent();
             }
             catch (Exception ex)
@@ -158,7 +148,7 @@ namespace API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new
                 {
                     ErrorCode = "USER_UPDATE_FAILED",
-                    Message = ex.Message
+                    ex.Message
                 });
             }
         }
@@ -167,14 +157,14 @@ namespace API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(Guid id)
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = await context.Users.FindAsync(id);
             if (user == null) return NotFound();
 
-            _context.Users.Remove(user);
+            context.Users.Remove(user);
 
             try
             {
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
                 return NoContent();
             }
             catch (Exception ex)
@@ -191,10 +181,10 @@ namespace API.Controllers
         [HttpDelete("bulk")]
         public async Task<IActionResult> BulkDelete([FromBody] BulkDeleteDTO dto)
         {
-            var validationResult = await _bulkDeleteValidator.ValidateAsync(dto);
+            var validationResult = await bulkDeleteValidator.ValidateAsync(dto);
             if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
 
-            return await BulkDeleteHelper.ExecuteAsync<User>(_context, dto.Ids, UserConstants.ENTITY_NAME, "UserID");
+            return await BulkDeleteHelper.ExecuteAsync<User>(context, dto.Ids, UserConstants.ENTITY_NAME, "UserID");
         }
     }
 }

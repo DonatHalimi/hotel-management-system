@@ -16,7 +16,7 @@ namespace API.Validations
                 .NotEmpty().WithMessage("Role name is required")
                 .Matches("^[A-Z][a-zA-Z]{2,}$").WithMessage("Role name must start with a capital letter and be at least 3 letters long, containing only letters")
                 .MaximumLength(RoleConstants.MAX_NAME_LENGTH).WithMessage($"Role name cannot exceed {RoleConstants.MAX_NAME_LENGTH} characters")
-                .MustAsync(async (name, cancellation) => await RoleValidation.IsRoleUniqueAsync(name, context)).WithMessage("Role name already exists");
+                .MustAsync(async (name, cancellation) => await RoleValidation.IsRoleUnique(name, context)).WithMessage("Role name already exists");
 
             RuleFor(x => x.Description)
                 .MaximumLength(RoleConstants.MAX_DESCRIPTION_LENGTH).WithMessage($"Description cannot exceed {RoleConstants.MAX_DESCRIPTION_LENGTH} characters");
@@ -48,7 +48,7 @@ namespace API.Validations
             return await context.Roles.AnyAsync(r => r.RoleID == roleId);
         }
 
-        public static async Task<bool> IsRoleUniqueAsync(string name, AppDbContext context)
+        public static async Task<bool> IsRoleUnique(string name, AppDbContext context)
         {
             if (string.IsNullOrWhiteSpace(name))
                 return false;

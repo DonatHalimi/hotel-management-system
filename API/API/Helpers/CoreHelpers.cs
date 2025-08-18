@@ -54,4 +54,23 @@ namespace API.Helpers
             }
         }
     }
+
+    public static class PaginationHelper
+    {
+        public static (int TotalPages, IActionResult? ErrorResult) GetPaginationInfo(int totalItems, int pageSize, int page)
+        {
+            if (totalItems == 0) return (0, new NotFoundResult());
+
+            var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+            if (page > totalPages) return (totalPages, new NotFoundObjectResult("Page number exceeds total pages"));
+
+            return (totalPages, null);
+        }
+
+        public static void AppendPaginationHeaders(HttpResponse response, int totalCount, int totalPages)
+        {
+            response.Headers.Append("X-Total-Count", totalCount.ToString());
+            response.Headers.Append("X-Total-Pages", totalPages.ToString());
+        }
+    }
 }
