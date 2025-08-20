@@ -90,7 +90,7 @@ namespace API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new
                 {
                     ErrorCode = "ROLE_CREATION_FAILED",
-                    Message = ex.Message
+                    ex.Message
                 });
             }
         }
@@ -123,7 +123,7 @@ namespace API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new
                 {
                     ErrorCode = "ROLE_UPDATE_FAILED",
-                    Message = ex.Message
+                    ex.Message
                 });
             }
         }
@@ -147,7 +147,7 @@ namespace API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new
                 {
                     ErrorCode = "ROLE_DELETE_FAILED",
-                    Message = ex.Message
+                    ex.Message
                 });
             }
         }
@@ -159,7 +159,7 @@ namespace API.Controllers
             var validationResult = await bulkDeleteValidator.ValidateAsync(dto);
             if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
 
-            return await BulkDeleteHelper.ExecuteAsync<Role>(context, dto.Ids, RoleConstants.ENTITY_NAME, "RoleID");
+            return await BulkDeleteHelper.Execute<Role>(context, dto.Ids, RoleConstants.ENTITY_NAME, "RoleID");
         }
     }
 }

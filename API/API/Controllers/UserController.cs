@@ -3,6 +3,7 @@ using API.Data.Context;
 using API.Helpers;
 using API.Models.DTOs;
 using API.Models.Entities;
+using API.Services;
 using API.Validations;
 using API.Validations.Constants;
 using FluentValidation;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace API.Controllers
@@ -22,7 +24,8 @@ namespace API.Controllers
      AppDbContext context,
      IValidator<CreateUserDTO> createValidator,
      IValidator<UpdateUserDTO> updateValidator,
-     IValidator<BulkDeleteDTO> bulkDeleteValidator) : ControllerBase
+     IValidator<BulkDeleteDTO> bulkDeleteValidator,
+     JwtService jwtService) : ControllerBase
     {
         // GET: api/users
         [HttpGet]
@@ -104,7 +107,6 @@ namespace API.Controllers
             return CreatedAtRoute("GetUserById", new { id = user.UserID }, user);
         }
 
-        // TODO: add custom messages for error from ErrorService.cs
         // PUT: api/users/{id}
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser([FromRoute] Guid id, [FromBody] UpdateUserDTO updateDto)
@@ -172,7 +174,7 @@ namespace API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new
                 {
                     ErrorCode = "USER_DELETE_FAILED",
-                    Message = ex.Message
+                    ex.Message
                 });
             }
         }
@@ -184,7 +186,7 @@ namespace API.Controllers
             var validationResult = await bulkDeleteValidator.ValidateAsync(dto);
             if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
 
-            return await BulkDeleteHelper.ExecuteAsync<User>(context, dto.Ids, UserConstants.ENTITY_NAME, "UserID");
+            return await BulkDeleteHelper.Execute<User>(context, dto.Ids, UserConstants.ENTITY_NAME, "UserID");
         }
     }
 }

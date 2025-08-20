@@ -84,5 +84,30 @@ namespace API.Services
 
             return null;
         }
+
+        public ClaimsPrincipal? GetUserFromToken(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidIssuer = _config.Issuer,
+                ValidAudience = _config.Audience,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(_key),
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero
+            };
+
+            try
+            {
+                return tokenHandler.ValidateToken(token, validationParameters, out _);
+            }
+            catch
+            {
+                return null;
+            }
+        }
     }
 }

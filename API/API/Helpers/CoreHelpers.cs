@@ -12,7 +12,7 @@ namespace API.Helpers
 {
     public static class BulkDeleteHelper
     {
-        public static async Task<IActionResult> ExecuteAsync<TEntity>(
+        public static async Task<IActionResult> Execute<TEntity>(
             DbContext context,
             IEnumerable<Guid> ids,
             string entityName,
@@ -46,7 +46,7 @@ namespace API.Helpers
                 return new ObjectResult(new
                 {
                     ErrorCode = $"{entityName.ToUpper()}_BULK_DELETE_FAILED",
-                    Message = ex.Message
+                    ex.Message
                 })
                 {
                     StatusCode = StatusCodes.Status500InternalServerError

@@ -66,6 +66,7 @@ namespace API.Controllers
             });
         }
 
+        // TODO: implement the option to save user session via HttpOnly cookies
         // POST: api/auth/login
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDTO loginDto)
@@ -106,6 +107,44 @@ namespace API.Controllers
             });
         }
 
+        [HttpGet("profile")]
+        public async Task<IActionResult> GetUserDetails()
+        {
+            var authHeader = Request.Headers["Authorization"].FirstOrDefault();
+            if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
+                return Unauthorized();
+
+            var token = authHeader.Substring("Bearer ".Length);
+
+            var principal = jwtService.GetUserFromToken(token);
+            if (principal == null)
+                return Unauthorized();
+
+            var userIdClaim = principal.FindFirst("UserID") ?? principal.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null) return Unauthorized();
+
+            var userId = Guid.Parse(userIdClaim.Value);
+
+            var user = await context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.UserID == userId);
+
+            if (user == null) return NotFound();
+
+            return Ok(new
+            {
+                user.UserID,
+                user.FirstName,
+                user.LastName,
+                user.Email,
+                user.ProfilePicture,
+                user.FullName,
+                user.CreatedAt,
+                user.UpdatedAt,
+                Role = user.Role?.Name
+            });
+        }
+
         // POST: api/auth/refresh
         [HttpPost("refresh")]
         public async Task<IActionResult> Refresh([FromBody] RefreshRequest model)
@@ -138,6 +177,7 @@ namespace API.Controllers
             });
         }
 
+        // TODO: on logout it should also invalidate the access token
         // POST: api/auth/logout
         [HttpPost("logout")]
         public async Task<IActionResult> Logout([FromBody] LogoutRequest model)

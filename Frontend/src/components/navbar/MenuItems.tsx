@@ -1,5 +1,5 @@
-import type { MenuItem } from 'primereact/menuitem';
 import React from 'react';
+import type { MenuItem } from 'primereact/menuitem';
 
 export const getMenuItems = (
     itemRenderer: (item: MenuItem & { badge?: number; shortcut?: string }) => React.ReactNode,
@@ -28,5 +28,5 @@ export const getMenuItems = (
         //         }
         //     ] as MenuItem[]
         // },
-        { label: 'Contact', icon: 'pi pi-envelope', template: itemRenderer }
+        { label: 'Contact', icon: 'pi pi-envelope', template: itemRenderer },
     ];

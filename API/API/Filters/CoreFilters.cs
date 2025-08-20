@@ -9,8 +9,7 @@ namespace API.Filters
     {
         public override void OnActionExecuted(ActionExecutedContext context)
         {
-            if (context.Result is not BadRequestObjectResult badRequest)
-                return;
+            if (context.Result is not BadRequestObjectResult badRequest) return;
 
             var errors = badRequest.Value switch
             {

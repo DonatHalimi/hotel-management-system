@@ -73,3 +73,7 @@ body,
   height: auto !important;
   padding: 0 !important;
 }
+
+.p-menubar-root-list {
+  padding-left: 5rem !important;
+}
