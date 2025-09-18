@@ -4,6 +4,7 @@ using API.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250831150727_AmenitiesTable")]
+    partial class AmenitiesTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,6 +24,64 @@ namespace API.Data.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("API.Models.Entities.Amenities", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("HasAirConditioning")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("HasBar")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("HasGym")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("HasHeating")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("HasParking")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("HasPool")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("HasRestaurant")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("HasRoomService")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("HasSpa")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("HasWifi")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPetFriendly")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Amenities");
+                });
 
             modelBuilder.Entity("API.Models.Entities.Hotel", b =>
                 {
@@ -43,26 +104,8 @@ namespace API.Data.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("HasGym")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("HasParking")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("HasPool")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("HasSpa")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("HasWifi")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("PetFriendly")
-                        .HasColumnType("bit");
 
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("nvarchar(max)");
@@ -98,46 +141,6 @@ namespace API.Data.Migrations
                     b.ToTable("Roles");
                 });
 
-            modelBuilder.Entity("API.Models.Entities.Room", b =>
-                {
-                    b.Property<Guid>("RoomID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Capacity")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("HotelID")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("IsAvailable")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("PricePerNight")
-                        .HasColumnType("int");
-
-                    b.Property<string>("RoomNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Type")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("RoomID");
-
-                    b.HasIndex("HotelID");
-
-                    b.ToTable("Rooms");
-                });
-
             modelBuilder.Entity("API.Models.Entities.User", b =>
                 {
                     b.Property<Guid>("UserID")
@@ -157,9 +160,6 @@ namespace API.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Password")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PhoneNumber")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ProfilePicture")
@@ -184,17 +184,6 @@ namespace API.Data.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("API.Models.Entities.Room", b =>
-                {
-                    b.HasOne("API.Models.Entities.Hotel", "Hotel")
-                        .WithMany("Rooms")
-                        .HasForeignKey("HotelID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Hotel");
-                });
-
             modelBuilder.Entity("API.Models.Entities.User", b =>
                 {
                     b.HasOne("API.Models.Entities.Role", "Role")
@@ -204,11 +193,6 @@ namespace API.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Role");
-                });
-
-            modelBuilder.Entity("API.Models.Entities.Hotel", b =>
-                {
-                    b.Navigation("Rooms");
                 });
 
             modelBuilder.Entity("API.Models.Entities.Role", b =>

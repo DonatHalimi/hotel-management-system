@@ -1,7 +1,6 @@
 ﻿using API.Validations.Constants;
 using FluentValidation;
 using System;
-using System.Linq;
 
 namespace API.Validations.Rules
 {
@@ -13,15 +12,15 @@ namespace API.Validations.Rules
             Func<T, string> firstNameSelector = null,
             Func<T, string> lastNameSelector = null,
             Func<T, string> emailSelector = null,
-            int minimumLength = UserConstants.MINIMUM_PASSWORD_LENGTH)
+            int minimumLength = UserConstants.MIN_PSW_LENGTH)
         {
             var options = ruleBuilder
                 .NotEmpty().WithMessage($"{passwordType} is required")
                 .MinimumLength(minimumLength).WithMessage($"{passwordType} must be at least {minimumLength} characters")
-                .Matches("[A-Z]").WithMessage($"{passwordType} must contain at least one uppercase letter")
-                .Matches("[a-z]").WithMessage($"{passwordType} must contain at least one lowercase letter")
-                .Matches("[0-9]").WithMessage($"{passwordType} must contain at least one number")
-                .Matches("[^a-zA-Z0-9]").WithMessage($"{passwordType} must contain at least one special character");
+                .Matches("[A-Z]").WithMessage($"{passwordType} must contain at least {UserConstants.MIN_PSW_COUNT} uppercase letter")
+                .Matches("[a-z]").WithMessage($"{passwordType} must contain at least {UserConstants.MIN_PSW_COUNT} lowercase letter")
+                .Matches("[0-9]").WithMessage($"{passwordType} must contain at least {UserConstants.MIN_PSW_COUNT} number")
+                .Matches("[^a-zA-Z0-9]").WithMessage($"{passwordType} must contain at least {UserConstants.MIN_PSW_COUNT} special character");
 
             if (firstNameSelector != null && lastNameSelector != null && emailSelector != null)
             {

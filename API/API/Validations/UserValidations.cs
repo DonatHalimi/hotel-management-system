@@ -49,6 +49,7 @@ namespace API.Validations
                 .When(x => x.FirstName != null);
 
             RuleFor(x => x.LastName)
+                .MaximumLength(50).WithMessage("First name cannot exceed 50 characters")
                 .Matches("^[A-Z][a-z]*$").WithMessage("Last name must start with a capital letter and contain only letters")
                 .MaximumLength(UserConstants.MAX_LAST_NAME_LENGTH).WithMessage($"Last name cannot exceed {UserConstants.MAX_LAST_NAME_LENGTH} characters")
                 .When(x => x.LastName != null);

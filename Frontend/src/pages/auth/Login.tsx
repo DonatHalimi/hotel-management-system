@@ -1,11 +1,11 @@
 import { Button } from "primereact/button"
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import axiosInstance from "../../config/axiosInstance"
 import { useToast } from "../../contexts/ToastContext"
 import Email from "../../custom/auth/Email"
 import Password from "../../custom/auth/Password"
 import Navbar from "../../components/navbar/Navbar"
+import { loginUser } from "../../services/authServices"
 
 interface LoginErrorProps {
     Email?: string[]
@@ -29,8 +29,11 @@ const Login = () => {
         try {
             setLoading(true)
             setErrors({})
-            const res = await axiosInstance.post("auth/login", { email, password })
-            localStorage.setItem("accessToken", res.data.accessToken)
+
+            const res = await loginUser({ email, password });
+
+            localStorage.setItem("accessToken", res.data.accessToken);
+            localStorage.setItem("refreshToken", res.data.refreshToken);
 
             toast({ severity: "success", summary: "Success", detail: "Successfully logged in" })
             navigate("/", { replace: true })
@@ -85,10 +88,9 @@ const Login = () => {
                             disabled={loading}
                             errors={errors.Password}
                         />
-
                         <Button
                             label={loading ? "Logging in..." : "Log In"}
-                            icon={loading ? "pi pi-spin pi-spinner" : "pi pi-sign-in"}
+                            icon={loading ? <i className="pi pi-spinner animate-spin" /> : "pi pi-sign-in"}
                             onClick={handleSubmit}
                             disabled={isDisabled}
                             className="w-full h-12 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 disabled:opacity-60 disabled:cursor-not-allowed border-0 rounded-lg text-white text-base font-medium font-sans transition-all duration-200 mt-2"

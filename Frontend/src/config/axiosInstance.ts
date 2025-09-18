@@ -48,14 +48,32 @@ axiosInstance.interceptors.response.use(
             isRefreshing = true;
 
             try {
-                const { data } = await axios.post("auth/refresh");
+                const accessToken = localStorage.getItem("accessToken");
+                const refreshToken = localStorage.getItem("refreshToken");
+
+                if (!accessToken || !refreshToken) {
+                    throw new Error("No tokens available");
+                }
+
+                const { data } = await axios.post(
+                    "https://localhost:7032/api/auth/refresh",
+                    {
+                        accessToken: accessToken,
+                        refreshToken: refreshToken
+                    }
+                );
+
                 localStorage.setItem("accessToken", data.accessToken);
+                localStorage.setItem("refreshToken", data.refreshToken);
+
                 axiosInstance.defaults.headers.Authorization = `Bearer ${data.accessToken}`;
+
                 processQueue(null, data.accessToken);
                 return axiosInstance(originalRequest);
             } catch (err) {
                 processQueue(err, null);
                 localStorage.removeItem("accessToken");
+                localStorage.removeItem("refreshToken");
                 window.location.href = "/login";
                 return Promise.reject(err);
             } finally {

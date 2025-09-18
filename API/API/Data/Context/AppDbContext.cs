@@ -7,6 +7,9 @@ namespace API.Data.Context
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
+        public DbSet<Hotel> Hotels { get; set; }
+
+        public DbSet<Room> Rooms { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -16,6 +19,12 @@ namespace API.Data.Context
                 .HasMany(r => r.Users)
                 .WithOne(u => u.Role)
                 .HasForeignKey(u => u.RoleID)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Hotel>()
+                .HasMany(h => h.Rooms)
+                .WithOne(r => r.Hotel)
+                .HasForeignKey(r => r.HotelID)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

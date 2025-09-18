@@ -15,6 +15,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Text;
+using static API.Validations.HotelValidations;
 
 DotNetEnv.Env.Load();
 
@@ -87,12 +88,21 @@ builder.Services.AddCors(options =>
 
 // Validators
 builder.Services.AddScoped<IValidator<BulkDeleteDTO>, BulkDeleteValidation>();
-builder.Services.AddScoped<IValidator<RegisterDTO>, RegisterUserDTOValidation>();
-builder.Services.AddScoped<IValidator<LoginDTO>, LoginDTOValidation>();
+builder.Services.AddScoped<IValidator<RegisterDTO>, RegisterValidation>();
+builder.Services.AddScoped<IValidator<LoginDTO>, LoginValidation>();
+
 builder.Services.AddScoped<IValidator<CreateUserDTO>, CreateUserDTOValidation>();
 builder.Services.AddScoped<IValidator<UpdateUserDTO>, UpdateUserDTOValidation>();
+
 builder.Services.AddScoped<IValidator<CreateRoleDTO>, CreateRoleDTOValidation>();
-builder.Services.AddScoped<IValidator<UpdateRoleDTO>, UpdateRoleDTOValidation>();
+builder.Services.AddScoped<IValidator<UpdateRoleDTO>, UpdateRoleDTOValidation>()
+    ;
+builder.Services.AddScoped<IValidator<CreateHotelDTO>, CreateHotelValidation>();
+builder.Services.AddScoped<IValidator<UpdateHotelDTO>, UpdateHotelValidation>();
+
+builder.Services.AddScoped<IValidator<CreateRoomDTO>, CreateRoomValidation>();
+builder.Services.AddScoped<IValidator<UpdateRoomDTO>, UpdateRoomValidation>();
+
 
 var jwtConfig = new JwtConfig
 {

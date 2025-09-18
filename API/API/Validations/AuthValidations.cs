@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace API.Validations
 {
-    public class RegisterUserDTOValidation : AbstractValidator<RegisterDTO>
+    public class RegisterValidation : AbstractValidator<RegisterDTO>
     {
-        public RegisterUserDTOValidation(AppDbContext context)
+        public RegisterValidation(AppDbContext context)
         {
             RuleFor(x => x.FirstName)
                 .NotEmpty().WithMessage("First name is required")
@@ -32,16 +32,15 @@ namespace API.Validations
                 .ApplyPasswordRules("Password", x => x.FirstName, x => x.LastName, x => x.Email);
 
             RuleFor(x => x.ConfirmPassword)
-                .Equal(x => x.Password)
-                .WithMessage("Passwords do not match");
+                .Equal(x => x.Password).WithMessage("Passwords do not match");
         }
     }
 
-    public class LoginDTOValidation : AbstractValidator<LoginDTO>
+    public class LoginValidation : AbstractValidator<LoginDTO>
     {
         private readonly AppDbContext _context;
 
-        public LoginDTOValidation(AppDbContext context)
+        public LoginValidation(AppDbContext context)
         {
             _context = context;
 

@@ -141,7 +141,8 @@ namespace API.Controllers
                 user.FullName,
                 user.CreatedAt,
                 user.UpdatedAt,
-                Role = user.Role?.Name
+                Role = user.Role?.Name,
+                user.PhoneNumber
             });
         }
 

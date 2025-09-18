@@ -1,13 +1,13 @@
 import { Button } from "primereact/button"
 import { useState } from "react"
 import { Link } from "react-router-dom"
-import axiosInstance from "../../config/axiosInstance"
 import { useToast } from "../../contexts/ToastContext"
 import Email from "../../custom/auth/Email"
 import FirstName from "../../custom/auth/FirstName"
 import LastName from "../../custom/auth/LastName"
 import Password from "../../custom/auth/Password"
 import Navbar from "../../components/navbar/Navbar"
+import { registerUser } from "../../services/authServices"
 
 interface RegisterErrorProps {
     FirstName?: string[],
@@ -44,13 +44,7 @@ const Register = () => {
             setLoading(true)
             setErrors({})
 
-            await axiosInstance.post("auth/register", {
-                firstName,
-                lastName,
-                email,
-                password,
-                confirmPassword
-            })
+            await registerUser({ firstName, lastName, email, password, confirmPassword })
 
             toast({ severity: 'success', summary: 'Success', detail: 'Account created successfully', });
 
@@ -152,7 +146,7 @@ const Register = () => {
 
                         <Button
                             label={loading ? "Creating Account..." : "Create Account"}
-                            icon={loading ? "pi pi-spin pi-spinner" : "pi pi-user-plus"}
+                            icon={loading ? <i className="pi pi-spinner animate-spin" /> : "pi pi-user-plus"}
                             onClick={handleSubmit}
                             disabled={isDisabled}
                             className="w-full h-12 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 disabled:opacity-60 disabled:cursor-not-allowed border-0 rounded-lg text-white text-base font-medium font-sans transition-all duration-200 mt-2"

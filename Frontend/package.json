@@ -29,7 +29,7 @@
     "@types/babel__traverse": "^7.28.0",
     "@types/estree": "^1.0.8",
     "@types/json-schema": "^7.0.15",
-    "@types/react": "^19.1.10",
+    "@types/react": "^19.1.12",
     "@types/react-dom": "^19.1.7",
     "@vitejs/plugin-react": "^5.0.0",
     "autoprefixer": "^10.4.21",

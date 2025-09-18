@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace API.Controllers
@@ -24,8 +23,7 @@ namespace API.Controllers
      AppDbContext context,
      IValidator<CreateUserDTO> createValidator,
      IValidator<UpdateUserDTO> updateValidator,
-     IValidator<BulkDeleteDTO> bulkDeleteValidator,
-     JwtService jwtService) : ControllerBase
+     IValidator<BulkDeleteDTO> bulkDeleteValidator) : ControllerBase
     {
         // GET: api/users
         [HttpGet]
@@ -63,7 +61,8 @@ namespace API.Controllers
                     u.FullName,
                     u.CreatedAt,
                     u.UpdatedAt,
-                    Role = u.Role.Name
+                    Role = u.Role.Name,
+                    u.PhoneNumber
                 })
                 .ToListAsync();
 
@@ -97,6 +96,7 @@ namespace API.Controllers
                 LastName = createDto.LastName,
                 Email = createDto.Email,
                 Password = passwordHash,
+                PhoneNumber = createDto.PhoneNumber,
                 ProfilePicture = profilePicture,
                 RoleID = roleId
             };
@@ -134,6 +134,9 @@ namespace API.Controllers
 
             if (!string.IsNullOrEmpty(updateDto.NewPassword))
                 user.Password = BCrypt.Net.BCrypt.HashPassword(updateDto.NewPassword);
+
+            if (updateDto.PhoneNumber != null)
+                user.PhoneNumber = updateDto.PhoneNumber;
 
             if (updateDto.RoleID.HasValue)
                 user.RoleID = updateDto.RoleID.Value;

@@ -14,9 +14,7 @@ namespace API.Models.DTOs
 
         public Guid? RoleID { get; set; }
 
-        //public string? PhoneNumber { get; set; }
-
-        //public string? Address { get; set; }
+        public string? PhoneNumber { get; set; }
     }
 
     public class UpdateUserDTO
@@ -30,6 +28,8 @@ namespace API.Models.DTOs
         public string Password { get; set; } = string.Empty;
 
         public string? NewPassword { get; set; }
+
+        public string? PhoneNumber { get; set; }
 
         public Guid? RoleID { get; set; }
     }

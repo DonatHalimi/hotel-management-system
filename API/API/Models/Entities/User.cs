@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace API.Models.Entities
 {
@@ -14,13 +15,11 @@ namespace API.Models.Entities
         public string? Password { get; set; }
         public string? ProfilePicture { get; set; }
 
-        //public string? PhoneNumber { get; set; }
-
-        //public string? Address { get; set; }
+        public string? PhoneNumber { get; set; }
 
         public Guid RoleID { get; set; } = Guid.Empty;
 
-        [ForeignKey("RoleID")]
+        [JsonIgnore]
         public Role Role { get; set; } = null!;
         public string? RefreshToken { get; set; }
         public DateTime? RefreshTokenExpiry { get; set; }

@@ -25,7 +25,7 @@ const Navbar = () => {
     const [user, setUser] = useState<User | null>(null);
 
     const showToast = () => toast({ severity: 'success', summary: 'Success', detail: 'Success Message', life: 3000 });
-    const isLoggedIn = localStorage.getItem('accessToken');
+    const isLoggedIn = !!user;
 
     const itemRenderer = (item: MenuItem & { badge?: number; shortcut?: string }) => (
         <a className="flex align-items-center p-menuitem-link">
@@ -55,7 +55,7 @@ const Navbar = () => {
     const end = (
         isLoggedIn ? (
             <div className="flex items-center gap-6 md:pr-16">
-                <AvatarMenu avatarUrl={user?.profilePicture ?? ''} />
+                <AvatarMenu user={user} avatarUrl={user?.profilePicture ?? ''} />
             </div>
         ) : (
             <div className="flex items-center gap-6 md:pr-32">
@@ -79,8 +79,10 @@ const Navbar = () => {
     }
 
     useEffect(() => {
-        getUserDetails();
-    }, [])
+        if (localStorage.getItem("accessToken")) {
+            getUserDetails();
+        }
+    }, []);
 
     return (
         <div className="">

@@ -9,5 +9,7 @@
         public const int MAX_SEARCH_LENGTH = 50;
 
         public const int MAX_DELETE_LENGTH = 100;
+
+        public const int MAX_DESC_LENGTH = 500;
     }
 }
