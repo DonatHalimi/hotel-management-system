@@ -17,7 +17,7 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/rooms")]
-    //[AdminOnly]
+    [AdminOnly]
     public class RoomController(
         AppDbContext context,
         IValidator<CreateRoomDTO> createValidator,
@@ -31,25 +31,42 @@ namespace API.Controllers
             PaginationValidation.Validate(page, pageSize, search ?? string.Empty, out var validationResult);
             if (validationResult != null) return validationResult;
 
-            var query = context.Rooms.AsQueryable();
+            var query = context.Rooms
+                .Include(r => r.Hotel)
+                .Include(r => r.RoomType)
+                .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(search))
             {
                 var s = $"%{search.Trim()}%";
                 query = query.Where(r =>
-                    EF.Functions.Like(r.RoomNumber.ToString(), s) ||
-                    EF.Functions.Like(r.Type, s));
+                    EF.Functions.Like(r.RoomNumber.ToString(), s));
             }
 
             var totalRooms = await query.CountAsync();
             var (totalPages, errorResult) = PaginationHelper.GetPaginationInfo(totalRooms, pageSize, page);
-
             if (errorResult != null) return errorResult;
 
             var rooms = await query
                 .OrderBy(r => r.RoomNumber)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
+                .Select(r => new
+                {
+                    r.RoomID,
+                    r.RoomNumber,
+                    r.FloorNumber,
+                    r.Status,
+                    r.Condition,
+                    r.Notes,
+                    r.HotelID,
+                    HotelName = r.Hotel.Name,
+                    r.RoomTypeID,
+                    RoomTypeName = r.RoomType.Name,
+                    r.IsActive,
+                    r.CreatedAt,
+                    r.UpdatedAt
+                })
                 .ToListAsync();
 
             PaginationHelper.AppendPaginationHeaders(Response, totalRooms, totalPages);
@@ -77,11 +94,13 @@ namespace API.Controllers
                 var room = new Room
                 {
                     RoomNumber = roomDto.RoomNumber,
-                    Description = roomDto.Description,
-                    Type = roomDto.Type,
-                    PricePerNight = (int)roomDto.PricePerNight,
-                    Capacity = roomDto.Capacity,
+                    FloorNumber = roomDto.FloorNumber,
+                    Status = roomDto.Status,
+                    Condition = roomDto.Condition,
+                    Notes = roomDto.Notes,
                     HotelID = roomDto.HotelID,
+                    RoomTypeID = roomDto.RoomTypeID,
+                    IsActive = roomDto.IsActive
                 };
 
                 context.Rooms.Add(room);
@@ -109,13 +128,32 @@ namespace API.Controllers
             var room = await context.Rooms.FindAsync(id);
             if (room == null) return NotFound();
 
-            room.RoomNumber = updateDto.RoomNumber;
-            room.Description = updateDto.Description;
-            room.Type = updateDto.Type;
-            room.PricePerNight = (int)updateDto.PricePerNight;
-            room.Capacity = updateDto.Capacity;
-            room.HotelID = updateDto.HotelID;
-            room.IsAvailable = updateDto.IsAvailable;
+            if (!string.IsNullOrWhiteSpace(updateDto.RoomNumber))
+                room.RoomNumber = updateDto.RoomNumber;
+
+            if (updateDto.FloorNumber.HasValue)
+                room.FloorNumber = updateDto.FloorNumber.Value;
+
+            if (updateDto.Status.HasValue)
+                room.Status = updateDto.Status.Value;
+
+            if (updateDto.Condition.HasValue)
+                room.Condition = updateDto.Condition.Value;
+
+            if (!string.IsNullOrWhiteSpace(updateDto.Notes))
+                room.Notes = updateDto.Notes;
+
+            if (updateDto.HotelID.HasValue)
+                room.HotelID = updateDto.HotelID.Value;
+
+            if (updateDto.RoomTypeID.HasValue)
+                room.RoomTypeID = updateDto.RoomTypeID.Value;
+
+            if (updateDto.LastMaintenanceDate.HasValue)
+                room.LastMaintenanceDate = updateDto.LastMaintenanceDate.Value;
+
+            if (updateDto.IsActive.HasValue)
+                room.IsActive = updateDto.IsActive.Value;
 
             room.UpdatedAt = DateTime.UtcNow;
 

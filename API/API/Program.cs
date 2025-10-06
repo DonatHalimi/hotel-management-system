@@ -15,6 +15,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Text;
+using static API.Validations.GuestValidations;
 using static API.Validations.HotelValidations;
 
 DotNetEnv.Env.Load();
@@ -86,6 +87,19 @@ builder.Services.AddCors(options =>
     });
 });
 
+var emailConfig = new EmailConfig
+{
+    SmtpServer = Environment.GetEnvironmentVariable("SMTP_SERVER") ?? "smtp.gmail.com",
+    SmtpPort = int.TryParse(Environment.GetEnvironmentVariable("SMTP_PORT"), out var port) ? port : 587,
+    SenderEmail = Environment.GetEnvironmentVariable("SENDER_EMAIL") ?? throw new Exception("SENDER_EMAIL required"),
+    SenderName = Environment.GetEnvironmentVariable("SENDER_NAME") ?? "Hotel Management System",
+    Username = Environment.GetEnvironmentVariable("SMTP_USERNAME") ?? throw new Exception("SMTP_USERNAME required"),
+    Password = Environment.GetEnvironmentVariable("SMTP_PASSWORD") ?? throw new Exception("SMTP_PASSWORD required"),
+    EnableSsl = bool.TryParse(Environment.GetEnvironmentVariable("SMTP_ENABLE_SSL"), out var ssl) ? ssl : true
+};
+
+builder.Services.AddSingleton(emailConfig);
+
 // Validators
 builder.Services.AddScoped<IValidator<BulkDeleteDTO>, BulkDeleteValidation>();
 builder.Services.AddScoped<IValidator<RegisterDTO>, RegisterValidation>();
@@ -103,6 +117,17 @@ builder.Services.AddScoped<IValidator<UpdateHotelDTO>, UpdateHotelValidation>();
 builder.Services.AddScoped<IValidator<CreateRoomDTO>, CreateRoomValidation>();
 builder.Services.AddScoped<IValidator<UpdateRoomDTO>, UpdateRoomValidation>();
 
+builder.Services.AddScoped<IValidator<CreateRoomTypeDTO>, CreateRoomTypeValidation>();
+builder.Services.AddScoped<IValidator<UpdateRoomTypeDTO>, UpdateRoomTypeValidation>();
+
+builder.Services.AddScoped<IValidator<CreateGuestDTO>, CreateGuestValidation>();
+builder.Services.AddScoped<IValidator<UpdateGuestDTO>, UpdateGuestValidation>();
+
+builder.Services.AddScoped<IValidator<VerifyEmailDTO>, VerifyEmailValidation>();
+builder.Services.AddScoped<IValidator<ResendVerificationDTO>, ResendVerificationValidation>();
+
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IOtpService, OtpService>();
 
 var jwtConfig = new JwtConfig
 {

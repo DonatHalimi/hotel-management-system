@@ -1,4 +1,5 @@
-﻿using System;
+﻿using API.Models.Enums;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
@@ -11,23 +12,42 @@ namespace API.Models.Entities
 
         public string? RoomNumber { get; set; }
 
-        public string? Type { get; set; }
+        public int FloorNumber { get; set; }
 
-        public string? Description { get; set; }
+        public RoomStatus Status { get; set; } = RoomStatus.Available;
 
-        public int Capacity { get; set; }
+        public RoomCondition Condition { get; set; } = RoomCondition.Good;
 
-        public int PricePerNight { get; set; }
+        public DateTime? LastMaintenanceDate { get; set; }
+
+        public string? Notes { get; set; }
 
         public Guid HotelID { get; set; }
 
         [JsonIgnore]
         public Hotel? Hotel { get; set; }
 
-        public bool IsAvailable { get; set; } = true;
+        public Guid RoomTypeID { get; set; }
+
+        [JsonIgnore]
+        public RoomType? RoomType { get; set; }
+
+        public bool IsActive { get; set; } = true;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public DateTime? UpdatedAt { get; set; }
+
+        [JsonIgnore]
+        public int MaxOccupancy => RoomType?.MaxOccupancy ?? 0;
+
+        [JsonIgnore]
+        public decimal BasePrice => RoomType?.BasePrice ?? 0;
+
+        [JsonIgnore]
+        public bool IsAvailableForBooking => IsActive &&
+            Status == RoomStatus.Available &&
+            Condition != RoomCondition.Poor &&
+            RoomType?.IsActive == true;
     }
 }

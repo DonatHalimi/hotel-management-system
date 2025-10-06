@@ -1,6 +1,6 @@
 import { Button } from "primereact/button"
 import { useState } from "react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { useToast } from "../../contexts/ToastContext"
 import Email from "../../custom/auth/Email"
 import FirstName from "../../custom/auth/FirstName"
@@ -19,6 +19,8 @@ interface RegisterErrorProps {
 
 const Register = () => {
     const { toast } = useToast();
+    const navigate = useNavigate();
+
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
@@ -46,14 +48,21 @@ const Register = () => {
 
             await registerUser({ firstName, lastName, email, password, confirmPassword })
 
-            toast({ severity: 'success', summary: 'Success', detail: 'Account created successfully', });
+            toast({
+                severity: 'success',
+                summary: 'Registration Successful',
+                detail: 'Please check your email for verification code.',
+            });
 
-            setTimeout(() => { window.location.href = "/login" }, 1500)
+            setTimeout(() => {
+                navigate('/verify-email', { state: { email: email } });
+            }, 1500);
+
         } catch (err: any) {
             const serverErrors = err.response?.data?.errors
             if (serverErrors) setErrors(serverErrors)
 
-            toast({ severity: 'error', summary: 'Error', detail: err.response?.data?.message || 'Registration failed. Please try again.', });
+            toast({ severity: 'error', summary: 'Registration Failed', detail: err.response?.data?.message || 'Registration failed. Please try again.', });
         } finally {
             setLoading(false)
         }

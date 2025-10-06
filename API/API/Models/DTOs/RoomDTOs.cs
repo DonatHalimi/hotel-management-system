@@ -1,30 +1,30 @@
-﻿using System;
+﻿using API.Models.Enums;
+using System;
 
 namespace API.Models.DTOs
 {
     public class CreateRoomDTO
     {
         public string? RoomNumber { get; set; }
-
-        public string? Description { get; set; }
-
-        public string? Type { get; set; }
-
-        public decimal PricePerNight { get; set; }
-
-        public int Capacity { get; set; }
-
+        public int FloorNumber { get; set; }
+        public RoomStatus Status { get; set; } = RoomStatus.Available;
+        public RoomCondition Condition { get; set; } = RoomCondition.Good;
+        public string? Notes { get; set; }
         public Guid HotelID { get; set; }
+        public Guid RoomTypeID { get; set; }
+        public bool IsActive { get; set; } = true;
     }
 
     public class UpdateRoomDTO
     {
         public string? RoomNumber { get; set; }
-        public string? Description { get; set; }
-        public string? Type { get; set; }
-        public decimal PricePerNight { get; set; }
-        public int Capacity { get; set; }
-        public Guid HotelID { get; set; }
-        public bool IsAvailable { get; set; }
+        public int? FloorNumber { get; set; }
+        public RoomStatus? Status { get; set; }
+        public RoomCondition? Condition { get; set; }
+        public string? Notes { get; set; }
+        public Guid? HotelID { get; set; }
+        public Guid? RoomTypeID { get; set; }
+        public DateTime? LastMaintenanceDate { get; set; }
+        public bool? IsActive { get; set; }
     }
 }

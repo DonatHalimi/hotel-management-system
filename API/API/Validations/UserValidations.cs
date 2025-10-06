@@ -58,7 +58,6 @@ namespace API.Validations
                 .Cascade(CascadeMode.Stop)
                 .EmailAddress().WithMessage("Invalid email format")
                 .MaximumLength(UserConstants.MAX_EMAIL_LENGTH).WithMessage($"Email cannot exceed {UserConstants.MAX_EMAIL_LENGTH} characters")
-                .MustAsync(async (email, cancellation) => await Task.FromResult(EmailValidation.DoesEmailExist(email, context))).WithMessage("Email already exists")
                 .When(x => !string.IsNullOrEmpty(x.Email));
 
             RuleFor(x => x.Password)

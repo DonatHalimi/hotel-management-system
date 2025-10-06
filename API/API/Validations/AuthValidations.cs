@@ -60,4 +60,29 @@ namespace API.Validations
                 .WithMessage("Password is incorrect");
         }
     }
+
+    public class VerifyEmailValidation : AbstractValidator<VerifyEmailDTO>
+    {
+        public VerifyEmailValidation()
+        {
+            RuleFor(x => x.Email)
+                .NotEmpty().WithMessage("Email is required")
+                .EmailAddress().WithMessage("Valid email address is required");
+
+            RuleFor(x => x.Otp)
+                .NotEmpty().WithMessage("OTP is required")
+                .Length(6).WithMessage("OTP must be exactly 6 digits")
+                .Matches(@"^\d{6}$").WithMessage("OTP must contain only digits");
+        }
+    }
+
+    public class ResendVerificationValidation : AbstractValidator<ResendVerificationDTO>
+    {
+        public ResendVerificationValidation()
+        {
+            RuleFor(x => x.Email)
+                .NotEmpty().WithMessage("Email is required")
+                .EmailAddress().WithMessage("Valid email address is required");
+        }
+    }
 }

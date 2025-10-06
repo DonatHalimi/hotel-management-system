@@ -1,0 +1,11 @@
+export const RoomConstants = {
+    ENTITY_NAME: "room",
+    MAX_ROOM_NUMBER_LENGTH: 100,
+    MIN_CAPACITY: 0,
+    MAX_CAPACITY: 15,
+    MIN_PRICE_PER_NIGHT: 20,
+    MAX_PRICE_PER_NIGHT: 5000,
+    MAX_NOTES_LENGTH: 500,
+    MIN_FLOOR_NUMBER: -5,
+    MAX_FLOOR_NUMBER: 200,
+};

@@ -10,7 +10,9 @@ namespace API.Data.Context
         public DbSet<Hotel> Hotels { get; set; }
 
         public DbSet<Room> Rooms { get; set; }
+        public DbSet<RoomType> RoomTypes { get; set; }
 
+        public DbSet<Guest> Guests { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -19,13 +21,19 @@ namespace API.Data.Context
                 .HasMany(r => r.Users)
                 .WithOne(u => u.Role)
                 .HasForeignKey(u => u.RoleID)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Hotel>()
                 .HasMany(h => h.Rooms)
                 .WithOne(r => r.Hotel)
                 .HasForeignKey(r => r.HotelID)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<RoomType>()
+                .HasMany(rt => rt.Rooms)
+                .WithOne(r => r.RoomType)
+                .HasForeignKey(r => r.RoomTypeID)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

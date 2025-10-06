@@ -1,11 +1,11 @@
 import axiosInstance from "../config/axiosInstance";
 
-interface LoginProps {
+interface LoginPayload {
     email: string,
     password: string
 }
 
-interface RegisterProps {
+interface RegisterPayload {
     firstName: string,
     lastName: string,
     email: string,
@@ -15,6 +15,6 @@ interface RegisterProps {
 
 export const getCurrentUser = () => axiosInstance.get('/auth/profile');
 
-export const loginUser = (LoginProps: LoginProps) => axiosInstance.post("auth/login", LoginProps)
+export const loginUser = (payload: LoginPayload) => axiosInstance.post("auth/login", payload)
 
-export const registerUser = (RegisterProps: RegisterProps) => axiosInstance.post("auth/register", RegisterProps)
+export const registerUser = (payload: RegisterPayload) => axiosInstance.post("auth/register", payload)

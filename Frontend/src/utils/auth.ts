@@ -34,10 +34,6 @@ export const decodeJwt = (token: string | null | undefined): any | null => {
     }
 };
 
-/**
- * Returns the user's role string (first found) or undefined.
- * First checks the Microsoft role claim URI provided, then falls back to common keys.
- */
 export const getRoleFromToken = (token?: string): string | undefined => {
     const tok = token ?? getToken();
     if (!tok) return undefined;
@@ -62,7 +58,6 @@ export const getRoleFromToken = (token?: string): string | undefined => {
         return String(v);
     }
 
-    // sometimes roles are inside a "claims" array
     if (Array.isArray(payload.claims)) {
         const claim = payload.claims.find((c: any) => (c.type || '').toLowerCase().includes('role'));
         if (claim?.value) return String(claim.value);
@@ -71,10 +66,6 @@ export const getRoleFromToken = (token?: string): string | undefined => {
     return undefined;
 };
 
-/**
- * Returns the user identifier (nameidentifier claim) if present.
- * Example key from your JWT: http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier
- */
 export const getUserIdFromToken = (token?: string): string | undefined => {
     const tok = token ?? getToken();
     if (!tok) return undefined;
@@ -104,8 +95,8 @@ export const isAuthenticated = (): boolean => {
 /**
  * hasRole(allowed)
  * - allowed: string | string[] | undefined
- * - semantics: if allowed is falsy => returns true (no role restriction).
- * - if allowed provided, returns true if the token contains a role that matches one of allowed (case-insensitive).
+ * - semantics: if allowed is falsy => returns true (no role restriction)
+ * - if allowed provided, returns true if the token contains a role that matches one of allowed (case-insensitive)
  */
 export const hasRole = (allowed?: string | string[]): boolean => {
     if (!allowed) return true;

@@ -31,7 +31,7 @@ namespace API.Models.Entities
 
         public bool PetFriendly { get; set; }
 
-        public ICollection<Room> Rooms { get; set; } = new List<Room>();
+        public ICollection<Room> Rooms { get; set; } = [];
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

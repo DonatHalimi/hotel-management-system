@@ -23,6 +23,9 @@ namespace API.Models.Entities
         public Role Role { get; set; } = null!;
         public string? RefreshToken { get; set; }
         public DateTime? RefreshTokenExpiry { get; set; }
+        public bool IsEmailVerified { get; set; } = false;
+        public string? EmailVerificationOtp { get; set; }
+        public DateTime? EmailVerificationOtpExpiry { get; set; }
 
         [NotMapped]
         public string FullName => $"{FirstName} {LastName}";

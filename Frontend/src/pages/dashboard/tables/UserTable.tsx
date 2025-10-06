@@ -1,0 +1,89 @@
+import React, { useCallback, useState } from "react";
+import EntityTable from "../../../components/table/EntityTable";
+import { type ColumnDef } from "../../../components/table/DataTableWrapper";
+import axiosInstance from "../../../config/axiosInstance";
+import { hasRole } from "../../../utils/auth";
+import { Button } from "primereact/button";
+import UserDialog from "../dialogs/UserDialog";
+
+const getId = (row: any) => row.userID ?? row.id ?? row._id;
+
+const UserTable: React.FC = () => {
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [editVisible, setEditVisible] = useState(false);
+    const [editInitial, setEditInitial] = useState<any | null>(null);
+    const [createVisible, setCreateVisible] = useState(false);
+
+    const columns: ColumnDef[] = [
+        { field: "firstName", header: "First Name", body: (r) => r.firstName ?? "—" },
+        { field: "lastName", header: "Last Name", body: (r) => r.lastName ?? "—" },
+        { field: "email", header: "Email", body: (r) => r.email ?? "—" },
+        {
+            field: "profilePicture",
+            header: "Profile Picture",
+            body: (r) =>
+                r.profilePicture ? (
+                    <img
+                        src={r.profilePicture}
+                        alt={`${r.firstName} ${r.lastName}`}
+                        style={{ width: "40px", height: "40px", borderRadius: "50%" }}
+                    />
+                ) : (
+                    "—"
+                ),
+        },
+        { field: "role", header: "Role", body: (r) => r.role ?? "—" },
+        { field: "createdAt", header: "Created At", body: (r) => new Date(r.createdAt).toLocaleDateString() },
+    ];
+
+    const openEditModal = useCallback(async (row: any) => {
+        const id = getId(row);
+        const res = await axiosInstance.get(`/users/${id}`);
+        setEditingId(id);
+        setEditInitial(res.data);
+        setEditVisible(true);
+    }, []);
+
+    return (
+        <EntityTable
+            title="Users"
+            columns={columns}
+            fetchUrl="/users"
+            getId={getId}
+            canEdit={hasRole(["Admin"])}
+            canDelete={hasRole(["Admin"])}
+            onEdit={openEditModal}
+            createButton={
+                <Button
+                    label="Create user"
+                    icon="pi pi-plus"
+                    onClick={() => setCreateVisible(true)}
+                />
+            }
+            createDialog={
+                <UserDialog
+                    visible={createVisible}
+                    onHide={() => setCreateVisible(false)}
+                    onSaved={() => window.location.reload()}
+                    mode="create"
+                />
+            }
+            editDialog={
+                <UserDialog
+                    visible={editVisible}
+                    onHide={() => {
+                        setEditVisible(false);
+                        setEditingId(null);
+                        setEditInitial(null);
+                    }}
+                    onSaved={() => window.location.reload()}
+                    mode="edit"
+                    id={editingId}
+                    initial={editInitial}
+                />
+            }
+        />
+    );
+};
+
+export default UserTable;

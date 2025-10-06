@@ -3,7 +3,6 @@ import { Column } from 'primereact/column';
 import { Paginator } from 'primereact/paginator';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { DataTable } from 'primereact/datatable';
-
 import { ConfirmDialog } from 'primereact/confirmdialog';
 import { confirmDialog } from 'primereact/confirmdialog';
 import { ConfirmPopup, confirmPopup } from 'primereact/confirmpopup';
@@ -29,7 +28,6 @@ type Props = {
     emptyMessage?: string;
     selection?: any | any[];
     onSelectionChange?: (sel: any | any[]) => void;
-    // accept 'checkbox' so parent can request checkbox selection explicitly
     selectionMode?: 'checkbox' | 'single' | 'multiple';
     topActions?: React.ReactNode;
     refreshKey?: number;
@@ -92,14 +90,12 @@ const DataTableWrapper: React.FC<Props> = ({
 
     return (
         <div className="w-full">
-            {/* ConfirmDialog is required once in the app root for programmatic confirmDialog() */}
-            <ConfirmDialog />
-            {/* ConfirmPopup placeholder for anchor popups */}
+            <ConfirmDialog draggable={false} />
+
             <ConfirmPopup />
 
             <div className="flex items-center justify-between mb-2">
-                <div>{topActions}</div>
-                <div />
+                {topActions}
             </div>
 
             <div className="relative">
@@ -116,7 +112,6 @@ const DataTableWrapper: React.FC<Props> = ({
                     responsiveLayout="scroll"
                     selection={selection}
                     onSelectionChange={(e: any) => onSelectionChange && onSelectionChange(e.value)}
-                    // Default to multiple row-selection unless caller requests checkbox or single
                     selectionMode={selectionMode ?? "multiple"}
                     className="min-w-full"
                 >

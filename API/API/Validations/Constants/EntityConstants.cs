@@ -50,5 +50,42 @@
 
         public const int MIN_PRICE_PER_NIGHT = 20;
         public const int MAX_PRICE_PER_NIGHT = 5000;
+
+        public const int MAX_NOTES_LENGTH = 500;
+        public const int MIN_FLOOR_NUMBER = -5;
+        public const int MAX_FLOOR_NUMBER = 200;
+    }
+
+    public static class RoomTypeConstants
+    {
+        public const string ENTITY_NAME = "room type";
+        public const int MAX_NAME_LENGTH = 100;
+        public const int MAX_DESCRIPTION_LENGTH = 500;
+        public const int MAX_AMENITIES_JSON_LENGTH = 2000;
+
+        public const int MIN_OCCUPANCY = 0;
+        public const int MAX_OCCUPANCY = 20;
+
+        public const int MIN_BED_COUNT = 0;
+        public const int MAX_BED_COUNT = 10;
+
+        public const decimal MIN_BASE_PRICE = 0;
+        public const decimal MAX_BASE_PRICE = 999999.99m;
+
+        public const decimal MIN_SIZE_SQFT = 0;
+        public const decimal MAX_SIZE_SQFT = 10000;
+    }
+
+    public static class GuestConstants
+    {
+        public const string ENTITY_NAME = "guest";
+        public const int MAX_ID_NUMBER_LENGTH = 20;
+        public const int MAX_FIRST_NAME_LENGTH = 20;
+        public const int MAX_LAST_NAME_LENGTH = 20;
+        public const int MAX_EMAIL_LENGTH = 100;
+        public const int MAX_PHONE_NUMBER_LENGTH = 15;
+        public const int MAX_STREET_LENGTH = 100;
+        public const int MAX_CITY_LENGTH = 50;
+        public const int MAX_COUNTRY_LENGTH = 50;
     }
 }

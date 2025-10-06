@@ -8,6 +8,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
@@ -20,9 +21,12 @@ namespace API.Controllers
     [Route("api/auth")]
     public class AuthController(
     AppDbContext context,
-     IValidator<RegisterDTO> registerValidator,
-     IValidator<LoginDTO> loginValidator,
-     JwtService jwtService) : ControllerBase
+    IValidator<RegisterDTO> registerValidator,
+    IValidator<LoginDTO> loginValidator,
+    JwtService jwtService,
+    IEmailService emailService,
+    IOtpService otpService,
+    ILogger<AuthController> logger) : ControllerBase
     {
         // POST: api/auth/register
         [HttpPost("register")]
@@ -30,6 +34,12 @@ namespace API.Controllers
         {
             var validation = await registerValidator.ValidateAsync(dto);
             if (!validation.IsValid) return BadRequest(validation.Errors);
+
+            var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+            if (existingUser != null)
+            {
+                return BadRequest(new { Message = "User with this email already exists" });
+            }
 
             var role = await context.Roles.FirstOrDefaultAsync(r => r.Name == RoleConstants.DEFAULT_ROLE_NAME);
             if (role == null)
@@ -42,6 +52,9 @@ namespace API.Controllers
             var profilePicture = ProfilePictureHelper.Generate(dto.FirstName, dto.LastName);
             var passwordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
 
+            var otp = otpService.GenerateOtp();
+            var otpExpiry = otpService.GetOtpExpiry(10);
+
             var user = new User
             {
                 FirstName = dto.FirstName,
@@ -49,11 +62,33 @@ namespace API.Controllers
                 Email = dto.Email,
                 Password = passwordHash,
                 ProfilePicture = profilePicture,
-                RoleID = role.RoleID
+                RoleID = role.RoleID,
+                IsEmailVerified = false,
+                EmailVerificationOtp = otp,
+                EmailVerificationOtpExpiry = otpExpiry
             };
 
             context.Users.Add(user);
             await context.SaveChangesAsync();
+
+            // Send verification email
+            try
+            {
+                await emailService.SendVerificationEmailAsync(user.Email, user.FirstName, otp);
+                logger.LogInformation("Verification email sent to {Email}", user.Email);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to send verification email to {Email}", user.Email);
+
+                context.Users.Remove(user);
+                await context.SaveChangesAsync();
+
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    Message = "Registration failed. Could not send verification email. Please try again."
+                });
+            }
 
             return CreatedAtRoute("GetUserById", new { id = user.UserID }, new
             {
@@ -62,7 +97,86 @@ namespace API.Controllers
                 user.LastName,
                 user.Email,
                 user.ProfilePicture,
-                Role = role.Name
+                Role = role.Name,
+                IsEmailVerified = user.IsEmailVerified,
+                Message = "Registration successful. Please check your email for a verification code"
+            });
+        }
+
+        // POST: api/auth/verify-email
+        [HttpPost("verify-email")]
+        public async Task<IActionResult> VerifyEmail(VerifyEmailDTO dto)
+        {
+            var user = await context.Users
+                .FirstOrDefaultAsync(u => u.Email == dto.Email);
+
+            if (user == null)
+                return BadRequest(new { Message = "User not found" });
+
+            if (user.IsEmailVerified)
+                return BadRequest(new { Message = "Email is already verified" });
+
+            if (user.EmailVerificationOtp != dto.Otp)
+                return BadRequest(new { Message = "Invalid OTP" });
+
+            if (user.EmailVerificationOtpExpiry == null || user.EmailVerificationOtpExpiry < DateTime.UtcNow)
+                return BadRequest(new { Message = "OTP has expired" });
+
+            user.IsEmailVerified = true;
+            user.EmailVerificationOtp = null;
+            user.EmailVerificationOtpExpiry = null;
+
+            context.Users.Update(user);
+            await context.SaveChangesAsync();
+
+            logger.LogInformation("Email verified successfully for user {Email}", user.Email);
+
+            return Ok(new
+            {
+                Message = "Email verified successfully",
+                IsEmailVerified = user.IsEmailVerified
+            });
+        }
+
+        // POST: api/auth/resend-verification
+        [HttpPost("resend-verification")]
+        public async Task<IActionResult> ResendVerification(ResendVerificationDTO dto)
+        {
+            var user = await context.Users
+                .FirstOrDefaultAsync(u => u.Email == dto.Email);
+
+            if (user == null)
+                return BadRequest(new { Message = "User not found" });
+
+            if (user.IsEmailVerified)
+                return BadRequest(new { Message = "Email is already verified" });
+
+            var otp = otpService.GenerateOtp();
+            var otpExpiry = otpService.GetOtpExpiry(10);
+
+            user.EmailVerificationOtp = otp;
+            user.EmailVerificationOtpExpiry = otpExpiry;
+
+            context.Users.Update(user);
+            await context.SaveChangesAsync();
+
+            try
+            {
+                await emailService.SendVerificationEmailAsync(user.Email, user.FirstName, otp);
+                logger.LogInformation("Verification email resent to {Email}", user.Email);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to resend verification email to {Email}", user.Email);
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    Message = "Failed to send verification email. Please try again later"
+                });
+            }
+
+            return Ok(new
+            {
+                Message = "Verification email sent successfully"
             });
         }
 
@@ -75,21 +189,20 @@ namespace API.Controllers
             if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
 
             var user = await context.Users
-                .Where(u => u.Email == loginDto.Email)
-                .Select(u => new
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Email == loginDto.Email);
+
+            if (user == null || !BCrypt.Net.BCrypt.Verify(loginDto.Password, user.Password))
+                return Unauthorized(new { Message = "Invalid credentials" });
+
+            if (!user.IsEmailVerified)
+                return BadRequest(new
                 {
-                    u.UserID,
-                    u.FirstName,
-                    u.LastName,
-                    u.Email,
-                    u.ProfilePicture,
-                    Role = u.Role.Name
-                })
-                .FirstOrDefaultAsync();
+                    Message = "Please verify your email address before logging in",
+                    RequiresEmailVerification = true
+                });
 
-            if (user == null) return Unauthorized(new { Message = "Invalid credentials" });
-
-            var accessToken = jwtService.GenerateAccessToken(user.UserID, user.Email, user.Role ?? "");
+            var accessToken = jwtService.GenerateAccessToken(user.UserID, user.Email, user.Role?.Name ?? "");
             var (refreshToken, refreshExpiry) = jwtService.GenerateRefreshToken();
 
             await context.Users
@@ -103,7 +216,15 @@ namespace API.Controllers
                 accessToken,
                 refreshToken,
                 expiresIn = refreshExpiry,
-                user
+                user = new
+                {
+                    user.UserID,
+                    user.FirstName,
+                    user.LastName,
+                    user.Email,
+                    user.ProfilePicture,
+                    Role = user.Role?.Name
+                }
             });
         }
 
@@ -142,7 +263,8 @@ namespace API.Controllers
                 user.CreatedAt,
                 user.UpdatedAt,
                 Role = user.Role?.Name,
-                user.PhoneNumber
+                user.PhoneNumber,
+                user.IsEmailVerified
             });
         }
 
@@ -159,7 +281,7 @@ namespace API.Controllers
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
                 return BadRequest(new { Message = "Invalid token claims" });
 
-            var user = await context.Users.FirstOrDefaultAsync(u => u.UserID == userId);
+            var user = await context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.UserID == userId);
             if (user == null || user.RefreshToken != model.RefreshToken || user.RefreshTokenExpiry <= DateTime.UtcNow)
                 return Unauthorized(new { Message = "Refresh token invalid or expired" });
 
