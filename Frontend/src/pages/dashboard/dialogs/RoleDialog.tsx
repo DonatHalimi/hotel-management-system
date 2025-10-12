@@ -50,9 +50,9 @@ const RoleDialog: React.FC<RoleDialogProps> = ({
         } catch (err: any) {
             console.error(err);
             const serverMessage =
-                err?.response?.data?.message ??
-                (err?.response?.data?.errors ? JSON.stringify(err.response.data.errors) : null) ??
-                err?.message ??
+                err?.response?.data?.message ||
+                (err?.response?.data?.errors ? JSON.stringify(err.response.data.errors) : null) ||
+                err?.message ||
                 'Request failed';
             toast({ severity: 'error', summary: 'Error', detail: String(serverMessage) });
         } finally {
@@ -70,7 +70,7 @@ const RoleDialog: React.FC<RoleDialogProps> = ({
             draggable={false}
         >
             <Formik
-                initialValues={{ ...emptyModel, ...(initial ?? {}) }}
+                initialValues={{ ...emptyModel, ...(initial || {}) }}
                 validationSchema={RoleSchema}
                 enableReinitialize
                 onSubmit={handleSubmit}

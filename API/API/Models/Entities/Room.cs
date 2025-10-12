@@ -1,5 +1,6 @@
 ﻿using API.Models.Enums;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
@@ -23,11 +24,10 @@ namespace API.Models.Entities
         public string? Notes { get; set; }
 
         public Guid HotelID { get; set; }
+        public Guid RoomTypeID { get; set; }
 
         [JsonIgnore]
         public Hotel? Hotel { get; set; }
-
-        public Guid RoomTypeID { get; set; }
 
         [JsonIgnore]
         public RoomType? RoomType { get; set; }
@@ -43,6 +43,9 @@ namespace API.Models.Entities
 
         [JsonIgnore]
         public decimal BasePrice => RoomType?.BasePrice ?? 0;
+
+        [JsonIgnore]
+        public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
 
         [JsonIgnore]
         public bool IsAvailableForBooking => IsActive &&

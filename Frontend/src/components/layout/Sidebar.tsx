@@ -80,16 +80,17 @@ const AppSidebar: React.FC = () => {
                     { label: 'Users', icon: 'pi pi-user', path: '/users' },
                     { label: 'Roles', icon: 'pi pi-cog', path: '/roles' },
                     { label: 'Guests', icon: 'pi pi-users', path: '/guests' },
-                    { label: 'Reservations', icon: 'pi pi-calendar', path: '/reservations', badge: '3', badgeClass: 'p-badge-success', },
+                    // { label: 'Reservations', icon: 'pi pi-calendar', path: '/reservations', badge: '3', badgeClass: 'p-badge-success', },
                 ],
             };
 
             const hotelsMgmt: MenuItem = {
-                label: 'Hotels Management',
+                label: 'Hotel Management',
                 icon: 'pi pi-building',
                 children: [
                     { label: 'Hotels', icon: 'pi pi-building', path: '/hotels' },
                     { label: 'Rooms', icon: 'pi pi-address-book', path: '/rooms' },
+                    { label: 'Bookings', icon: 'pi pi-calendar', path: '/bookings' },
                 ],
             };
 
@@ -104,7 +105,7 @@ const AppSidebar: React.FC = () => {
         const key =
             item.label === 'User Management'
                 ? 'userMgmt'
-                : item.label === 'Hotels Management'
+                : item.label === 'Hotel Management'
                     ? 'hotelsMgmt'
                     : item.label;
 
@@ -125,10 +126,7 @@ const AppSidebar: React.FC = () => {
                     </div>
 
                     {hasChildren && (
-                        <i
-                            className={`pi ${isOpen ? 'pi-chevron-up' : 'pi-chevron-down'
-                                } text-gray-500 text-sm transition-transform duration-200`}
-                        />
+                        <i className={`pi ${isOpen ? 'pi-chevron-up' : 'pi-chevron-down'} text-gray-500 text-sm transition-transform duration-200`} />
                     )}
                 </button>
 
@@ -168,7 +166,7 @@ const AppSidebar: React.FC = () => {
             <div className="md:hidden fixed top-0 left-0 w-full z-50">
                 <Menubar
                     start={<Button icon="pi pi-align-left" text onClick={() => setVisible(true)} />}
-                    end={<AvatarMenu user={user} avatarUrl={user?.profilePicture ?? ''} />}
+                    end={<AvatarMenu user={user} avatarUrl={user?.profilePicture || ''} />}
                     className="border-none shadow-sm"
                 />
             </div>
@@ -184,7 +182,7 @@ const AppSidebar: React.FC = () => {
 
                 <div className="px-4 mb-4">
                     <div className="flex items-center gap-6 w-full">
-                        <AvatarMenu user={user} avatarUrl={user?.profilePicture ?? ''} />
+                        <AvatarMenu user={user} avatarUrl={user?.profilePicture || ''} />
                     </div>
                 </div>
             </div>

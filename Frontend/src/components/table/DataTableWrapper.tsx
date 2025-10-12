@@ -86,7 +86,7 @@ const DataTableWrapper: React.FC<Props> = ({
         }
     };
 
-    const displayData = lazy ? serverData : clientData ?? [];
+    const displayData = lazy ? serverData : clientData || [];
 
     return (
         <div className="w-full">
@@ -112,7 +112,7 @@ const DataTableWrapper: React.FC<Props> = ({
                     responsiveLayout="scroll"
                     selection={selection}
                     onSelectionChange={(e: any) => onSelectionChange && onSelectionChange(e.value)}
-                    selectionMode={selectionMode ?? "multiple"}
+                    selectionMode={selectionMode || "multiple"}
                     className="min-w-full"
                 >
                     {columns.map((c) => (
@@ -164,14 +164,14 @@ export const showConfirmPopup = (
         reject?: () => void;
     }
 ) => {
-    const target = (event as any).currentTarget ?? (event as any).target;
+    const target = (event as any).currentTarget || (event as any).target;
     confirmPopup({
         target,
         message: opts.message,
         header: opts.header,
         icon: opts.icon,
-        acceptLabel: opts.acceptLabel ?? 'Yes',
-        rejectLabel: opts.rejectLabel ?? 'No',
+        acceptLabel: opts.acceptLabel || 'Yes',
+        rejectLabel: opts.rejectLabel || 'No',
         accept: opts.accept,
         reject: opts.reject,
     });
@@ -190,8 +190,8 @@ export const showConfirmDialog = (opts: {
         message: opts.message,
         header: opts.header,
         icon: opts.icon,
-        acceptLabel: opts.acceptLabel ?? 'Yes',
-        rejectLabel: opts.rejectLabel ?? 'No',
+        acceptLabel: opts.acceptLabel || 'Yes',
+        rejectLabel: opts.rejectLabel || 'No',
         accept: opts.accept,
         reject: opts.reject,
     });

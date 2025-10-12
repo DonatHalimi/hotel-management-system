@@ -35,7 +35,7 @@ const UserDialog: React.FC<UserDialogProps> = ({ visible, onHide, onSaved, initi
         const fetchRoles = async () => {
             try {
                 const res = await axiosInstance.get("/roles");
-                setRoleOptions(res.data.map((r: any) => ({ label: r.name, value: r.roleID ?? r.id })));
+                setRoleOptions(res.data.map((r: any) => ({ label: r.name, value: r.roleID || r.id })));
             } catch (err) {
                 console.error("Failed to fetch roles", err);
             }
@@ -61,9 +61,9 @@ const UserDialog: React.FC<UserDialogProps> = ({ visible, onHide, onSaved, initi
         } catch (err: any) {
             console.error("User save failed:", err);
             const serverMessage =
-                err?.response?.data?.message ??
-                (err?.response?.data?.errors ? JSON.stringify(err.response.data.errors) : null) ??
-                err?.message ??
+                err?.response?.data?.message ||
+                (err?.response?.data?.errors ? JSON.stringify(err.response.data.errors) : null) ||
+                err?.message ||
                 "Request failed";
             toast({ severity: "error", summary: "Error", detail: String(serverMessage) });
         } finally {
@@ -81,7 +81,7 @@ const UserDialog: React.FC<UserDialogProps> = ({ visible, onHide, onSaved, initi
             draggable={false}
         >
             <Formik
-                initialValues={{ ...emptyModel, ...(initial ?? {}) }}
+                initialValues={{ ...emptyModel, ...(initial || {}) }}
                 validationSchema={UserSchema}
                 enableReinitialize
                 onSubmit={handleSubmit}

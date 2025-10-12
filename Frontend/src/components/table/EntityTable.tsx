@@ -13,9 +13,12 @@ type EntityTableProps<T> = {
     createButton?: React.ReactNode;
     createDialog?: React.ReactNode;
     editDialog?: React.ReactNode;
+    viewDialog?: React.ReactNode;
     canEdit?: boolean;
     canDelete?: boolean;
+    canView?: boolean;
     onEdit?: (row: T) => void;
+    onView?: (row: T) => void;
     extraTopActions?: React.ReactNode;
 };
 
@@ -27,9 +30,12 @@ function EntityTable<T extends object>({
     createButton,
     createDialog,
     editDialog,
+    viewDialog,
     canEdit = false,
     canDelete = false,
+    canView = false,
     onEdit,
+    onView,
     extraTopActions,
 }: EntityTableProps<T>) {
     const [selected, setSelected] = useState<T[] | null>(null);
@@ -44,21 +50,21 @@ function EntityTable<T extends object>({
 
             const totalFromHeader =
                 Number(
-                    res.headers["x-total-count"] ??
-                    res.headers["x-totalrecords"] ??
-                    res.headers["x-total"] ??
+                    res.headers["x-total-count"] ||
+                    res.headers["x-totalrecords"] ||
+                    res.headers["x-total"] ||
                     res.headers["x-total-pages"]
                 ) || undefined;
 
             const payload = res.data;
-            const items = Array.isArray(payload) ? payload : payload.data ?? payload;
+            const items = Array.isArray(payload) ? payload : payload.data || payload;
             const total =
-                totalFromHeader ??
+                totalFromHeader ||
                 (Array.isArray(payload)
                     ? payload.length
-                    : payload.total ?? payload.data?.length ?? items.length);
+                    : payload.total || payload.data?.length || items.length);
 
-            return { data: items ?? [], total };
+            return { data: items || [], total };
         },
         [fetchUrl]
     );
@@ -101,15 +107,23 @@ function EntityTable<T extends object>({
     }, [canDelete, fetchUrl, getId, selected]);
 
     const actions = (row: T) => {
-        if (!canEdit && !canDelete) return null;
+        if (!canView && !canEdit && !canDelete) return null;
         return (
             <div className="flex gap-2">
+                {canView && (
+                    <PrimeButton
+                        icon="pi pi-eye"
+                        onClick={() => onView?.(row)}
+                        aria-label="View"
+                        className="p-button-text p-button-info"
+                    />
+                )}
                 {canEdit && (
                     <PrimeButton
                         icon="pi pi-pencil"
-                        className="p-button-text"
                         onClick={() => onEdit?.(row)}
                         aria-label="Edit"
+                        className="p-button-text"
                     />
                 )}
                 {canDelete && (
@@ -158,6 +172,7 @@ function EntityTable<T extends object>({
             />
             {createDialog}
             {editDialog}
+            {viewDialog}
         </div>
     );
 }

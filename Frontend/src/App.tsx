@@ -16,6 +16,7 @@ import UserTable from './pages/dashboard/tables/UserTable';
 import RoomTable from './pages/dashboard/tables/RoomTable';
 import RoleTable from './pages/dashboard/tables/RoleTable';
 import GuestTable from './pages/dashboard/tables/GuestTable';
+import BookingTable from './pages/dashboard/tables/BookingTable';
 
 const App = () => {
   return (
@@ -44,9 +45,9 @@ const App = () => {
                 <Route path="/users" element={<UserTable />} />
                 <Route path="/roles" element={<RoleTable />} />
                 <Route path="/rooms" element={<RoomTable />} />
+                <Route path="/bookings" element={<BookingTable />} />
               </Route>
 
-              <Route path='/reservations' element={<div>Reservations Page</div>} />
               <Route path='/settings' element={<div>Settings Page</div>} />
               <Route path='/support' element={<div>Support Page</div>} />
             </Route>

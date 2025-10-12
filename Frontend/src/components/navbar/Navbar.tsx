@@ -55,7 +55,7 @@ const Navbar = () => {
     const end = (
         isLoggedIn ? (
             <div className="flex items-center gap-6 md:pr-16">
-                <AvatarMenu user={user} avatarUrl={user?.profilePicture ?? ''} />
+                <AvatarMenu user={user} avatarUrl={user?.profilePicture || ''} />
             </div>
         ) : (
             <div className="flex items-center gap-6 md:pr-32">

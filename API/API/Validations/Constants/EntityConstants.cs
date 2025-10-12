@@ -88,4 +88,16 @@
         public const int MAX_CITY_LENGTH = 50;
         public const int MAX_COUNTRY_LENGTH = 50;
     }
+
+    public static class BookingConstants
+    {
+        public const string ENTITY_NAME = "booking";
+        public const int MAX_BOOKING_NUMBER_LENGTH = 20;
+        public const decimal MIN_TOTAL_PRICE = 0;
+        public const decimal MAX_TOTAL_PRICE = 999999.99m;
+        public const int MIN_GUESTS = 1;
+        public const int MAX_GUESTS = 20;
+        public const int MAX_GUESTS_PER_BOOKING = 10;
+        public const int MAX_CANCELLATION_REASON_LENGTH = 500;
+    }
 }

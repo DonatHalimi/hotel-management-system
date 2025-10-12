@@ -7,7 +7,8 @@ import FirstName from "../../custom/auth/FirstName"
 import LastName from "../../custom/auth/LastName"
 import Password from "../../custom/auth/Password"
 import Navbar from "../../components/navbar/Navbar"
-import { registerUser } from "../../services/authServices"
+import { googleLogin, registerUser } from "../../services/authServices"
+import { GoogleLogin, type CredentialResponse } from "@react-oauth/google"
 
 interface RegisterErrorProps {
     FirstName?: string[],
@@ -67,6 +68,31 @@ const Register = () => {
             setLoading(false)
         }
     }
+
+    const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+        try {
+            if (!credentialResponse.credential) {
+                throw new Error("No credential received from Google");
+            }
+
+            setLoading(true);
+            const res = await googleLogin({ idToken: credentialResponse.credential });
+
+            localStorage.setItem("accessToken", res.data.accessToken);
+            localStorage.setItem("refreshToken", res.data.refreshToken);
+
+            toast({ severity: "success", summary: "Success", detail: "Successfully logged in with Google" });
+            navigate("/", { replace: true });
+        } catch (err: any) {
+            toast({ severity: "error", summary: "Error", detail: err.response?.data?.message || "Google login failed. Please try again" });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleGoogleError = () => {
+        toast({ severity: "error", summary: "Error", detail: "Google login failed. Please try again" });
+    };
 
     const handleKeyPress = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && !loading) {
@@ -160,6 +186,26 @@ const Register = () => {
                             disabled={isDisabled}
                             className="w-full h-12 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 disabled:opacity-60 disabled:cursor-not-allowed border-0 rounded-lg text-white text-base font-medium font-sans transition-all duration-200 mt-2"
                         />
+
+                        <div className="relative flex items-center justify-center my-2">
+                            <div className="border-t border-gray-300 w-full"></div>
+                            <span className="px-4 text-sm text-gray-500 bg-white/95">OR</span>
+                            <div className="border-t border-gray-300 w-full"></div>
+                        </div>
+
+                        <div className="flex justify-center">
+                            <GoogleLogin
+                                onSuccess={handleGoogleSuccess}
+                                onError={handleGoogleError}
+                                useOneTap
+                                theme="outline"
+                                size="large"
+                                text="signin_with"
+                                shape="rectangular"
+                                width="100%"
+                            />
+                        </div>
+
                         <p className="text-sm text-gray-400">
                             Already have an account?<Link to="/login" className="hover:text-gray-600 hover:underline ml-1">Log In</Link>
                         </p>

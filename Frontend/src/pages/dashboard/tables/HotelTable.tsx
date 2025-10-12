@@ -5,26 +5,29 @@ import axiosInstance from "../../../config/axiosInstance";
 import HotelDialog from "../dialogs/HotelDialog";
 import { hasRole } from "../../../utils/auth";
 import { Button } from "primereact/button";
+import HotelDetails from "../details/HotelDetails";
 
-const getId = (row: any) => row.hotelID ?? row.HotelID ?? row.id ?? row.Id ?? row._id;
+const getId = (row: any) => row.hotelID || row.HotelID || row.id || row.Id || row._id;
 
 const HotelTable: React.FC = () => {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editVisible, setEditVisible] = useState(false);
     const [editInitial, setEditInitial] = useState<any | null>(null);
     const [createVisible, setCreateVisible] = useState(false);
+    const [viewVisible, setViewVisible] = useState(false);
+    const [viewData, setViewData] = useState<any | null>(null);
 
     const columns: ColumnDef[] = [
-        { field: "name", header: "Name", body: (r) => r.name ?? "—" },
-        { field: "city", header: "City", body: (r) => r.city ?? "—" },
-        { field: "country", header: "Country", body: (r) => r.country ?? "—" },
-        { field: "email", header: "Email", body: (r) => r.email ?? "—" },
-        { field: "phoneNumber", header: "Phone", body: (r) => r.phoneNumber ?? "—" },
+        { field: "name", header: "Name", body: (r) => r.name || "—" },
+        { field: "city", header: "City", body: (r) => r.city || "—" },
+        { field: "country", header: "Country", body: (r) => r.country || "—" },
+        { field: "email", header: "Email", body: (r) => r.email || "—" },
+        { field: "phoneNumber", header: "Phone", body: (r) => r.phoneNumber || "—" },
         {
             field: "rooms",
             header: "Rooms",
             body: (r) =>
-                Array.isArray(r.rooms) ? r.rooms.length : r.roomCount ?? "—",
+                Array.isArray(r.rooms) ? r.rooms.length : r.roomCount || "—",
         },
         {
             field: 'amenities',
@@ -50,15 +53,42 @@ const HotelTable: React.FC = () => {
         setEditVisible(true);
     }, []);
 
+    const openViewModal = useCallback(async (row: any) => {
+        const id = getId(row);
+        const res = await axiosInstance.get(`/hotels/${id}`);
+        setViewData(res.data);
+        setViewVisible(true);
+    }, []);
+
+    const handleEdit = useCallback(async (row: any) => {
+        await openEditModal(row);
+        setViewVisible(false);
+    }, [openEditModal]);
+
+    const handleDelete = useCallback(async (row: any) => {
+        const id = getId(row);
+        if (!id) return;
+        try {
+            await axiosInstance.delete(`/hotels/${id}`);
+            setViewVisible(false);
+            window.location.reload();
+        } catch (err) {
+            console.error(err);
+            alert("Delete failed");
+        }
+    }, []);
+
     return (
         <EntityTable
             title="Hotels"
             columns={columns}
             fetchUrl="/hotels"
             getId={getId}
+            canView={true}
             canEdit={hasRole(["Admin"])}
             canDelete={hasRole(["Admin"])}
             onEdit={openEditModal}
+            onView={openViewModal}
             createButton={
                 <Button
                     label="Create hotel"
@@ -86,6 +116,15 @@ const HotelTable: React.FC = () => {
                     mode="edit"
                     id={editingId}
                     initial={editInitial}
+                />
+            }
+            viewDialog={
+                <HotelDetails
+                    visible={viewVisible}
+                    onHide={() => setViewVisible(false)}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    hotel={viewData}
                 />
             }
         />

@@ -74,11 +74,31 @@ namespace API.Controllers
         [HttpGet("{id}", Name = "GetUserById")]
         public async Task<IActionResult> GetUser(Guid id)
         {
-            var user = await context.Users.FindAsync(id);
-            if (user == null) return NotFound();
+            var user = await context.Users
+                .Include(u => u.Role)
+                .Where(u => u.UserID == id)
+                .Select(u => new
+                {
+                    u.UserID,
+                    u.FirstName,
+                    u.LastName,
+                    u.FullName,
+                    u.Email,
+                    u.ProfilePicture,
+                    u.IsEmailVerified,
+                    u.CreatedAt,
+                    u.UpdatedAt,
+                    u.PhoneNumber,
+                    Role = u.Role.Name
+                })
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+                return NotFound();
 
             return Ok(user);
         }
+
 
         [HttpPost]
         public async Task<IActionResult> CreateUser(CreateUserDTO createDto)

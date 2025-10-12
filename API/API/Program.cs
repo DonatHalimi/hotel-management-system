@@ -15,6 +15,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Text;
+using static API.Validations.BookingValidations;
 using static API.Validations.GuestValidations;
 using static API.Validations.HotelValidations;
 
@@ -122,6 +123,9 @@ builder.Services.AddScoped<IValidator<UpdateRoomTypeDTO>, UpdateRoomTypeValidati
 
 builder.Services.AddScoped<IValidator<CreateGuestDTO>, CreateGuestValidation>();
 builder.Services.AddScoped<IValidator<UpdateGuestDTO>, UpdateGuestValidation>();
+
+builder.Services.AddScoped<IValidator<CreateBookingDTO>, CreateBookingValidation>();
+builder.Services.AddScoped<IValidator<UpdateBookingDTO>, UpdateBookingValidation>();
 
 builder.Services.AddScoped<IValidator<VerifyEmailDTO>, VerifyEmailValidation>();
 builder.Services.AddScoped<IValidator<ResendVerificationDTO>, ResendVerificationValidation>();

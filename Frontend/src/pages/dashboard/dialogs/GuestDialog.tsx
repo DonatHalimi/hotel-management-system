@@ -55,8 +55,8 @@ const GuestDialog: React.FC<GuestDialogProps> = ({
         } catch (err: any) {
             console.error(err);
             const message =
-                err?.response?.data?.message ??
-                (err?.response?.data?.errors ? JSON.stringify(err.response.data.errors) : err?.message ?? 'Request failed');
+                err?.response?.data?.message ||
+                (err?.response?.data?.errors ? JSON.stringify(err.response.data.errors) : err?.message || 'Request failed');
             toast({ severity: 'error', summary: 'Error', detail: String(message) });
         } finally {
             setSubmitting(false);
@@ -73,7 +73,7 @@ const GuestDialog: React.FC<GuestDialogProps> = ({
             draggable={false}
         >
             <Formik
-                initialValues={{ ...emptyModel, ...(initial ?? {}) }}
+                initialValues={{ ...emptyModel, ...(initial || {}) }}
                 validationSchema={GuestSchema}
                 enableReinitialize
                 onSubmit={handleSubmit}
@@ -89,47 +89,45 @@ const GuestDialog: React.FC<GuestDialogProps> = ({
                                 <ErrorMessage name="firstName" component="small" className="text-red-500" />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">
-                                    Last Name <span className="text-red-500">*</span>
-                                </label>
+                                <label className="block text-sm font-medium mb-1">Last Name <span className="text-red-500">*</span></label>
                                 <Field as={InputText} name="lastName" className="w-full" />
                                 <ErrorMessage name="lastName" component="small" className="text-red-500" />
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium mb-1">ID Number</label>
+                            <label className="block text-sm font-medium mb-1">ID Number <span className="text-red-500">*</span></label>
                             <Field as={InputText} name="idNumber" className="w-full" />
                             <ErrorMessage name="idNumber" component="small" className="text-red-500" />
                         </div>
 
                         <div className="grid grid-cols-2 gap-3">
                             <div>
-                                <label className="block text-sm font-medium mb-1">Email</label>
+                            <label className="block text-sm font-medium mb-1">Email <span className="text-red-500">*</span></label>
                                 <Field as={InputText} name="email" className="w-full" />
                                 <ErrorMessage name="email" component="small" className="text-red-500" />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">Phone Number</label>
+                                <label className="block text-sm font-medium mb-1">Phone Number <span className="text-red-500">*</span></label>
                                 <Field as={InputText} name="phoneNumber" className="w-full" />
                                 <ErrorMessage name="phoneNumber" component="small" className="text-red-500" />
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium mb-1">Street</label>
+                            <label className="block text-sm font-medium mb-1">Street <span className="text-red-500">*</span></label>
                             <Field as={InputText} name="street" className="w-full" />
                             <ErrorMessage name="street" component="small" className="text-red-500" />
                         </div>
 
                         <div className="grid grid-cols-2 gap-3">
                             <div>
-                                <label className="block text-sm font-medium mb-1">City</label>
+                                <label className="block text-sm font-medium mb-1">City <span className="text-red-500">*</span></label>
                                 <Field as={InputText} name="city" className="w-full" />
                                 <ErrorMessage name="city" component="small" className="text-red-500" />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">Country</label>
+                                <label className="block text-sm font-medium mb-1">Country <span className="text-red-500">*</span></label>
                                 <Field as={InputText} name="country" className="w-full" />
                                 <ErrorMessage name="country" component="small" className="text-red-500" />
                             </div>

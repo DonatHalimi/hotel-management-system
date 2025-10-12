@@ -77,8 +77,31 @@ namespace API.Controllers
         [HttpGet("{id}", Name = "GetRoomById")]
         public async Task<IActionResult> GetRoomById(Guid id)
         {
-            var room = await context.Rooms.FindAsync(id);
-            if (room == null) return NotFound();
+            var room = await context.Rooms
+                .Include(r => r.Hotel)
+                .Include(r => r.RoomType)
+                .Where(r => r.RoomID == id)
+                .Select(r => new
+                {
+                    r.RoomID,
+                    r.RoomNumber,
+                    r.FloorNumber,
+                    r.Status,
+                    r.Condition,
+                    r.Notes,
+                    r.HotelID,
+                    HotelName = r.Hotel.Name,
+                    r.RoomTypeID,
+                    RoomTypeName = r.RoomType.Name,
+                    r.IsActive,
+                    r.CreatedAt,
+                    r.UpdatedAt
+                })
+                .FirstOrDefaultAsync();
+
+            if (room == null)
+                return NotFound();
+
             return Ok(room);
         }
 

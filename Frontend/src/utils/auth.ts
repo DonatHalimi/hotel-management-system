@@ -35,7 +35,7 @@ export const decodeJwt = (token: string | null | undefined): any | null => {
 };
 
 export const getRoleFromToken = (token?: string): string | undefined => {
-    const tok = token ?? getToken();
+    const tok = token || getToken();
     if (!tok) return undefined;
     const payload = decodeJwt(tok);
     if (!payload) return undefined;
@@ -67,7 +67,7 @@ export const getRoleFromToken = (token?: string): string | undefined => {
 };
 
 export const getUserIdFromToken = (token?: string): string | undefined => {
-    const tok = token ?? getToken();
+    const tok = token || getToken();
     if (!tok) return undefined;
     const payload = decodeJwt(tok);
     if (!payload) return undefined;

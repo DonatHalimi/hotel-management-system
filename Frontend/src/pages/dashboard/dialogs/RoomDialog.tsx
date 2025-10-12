@@ -135,11 +135,11 @@ const RoomDialog: React.FC<RoomDialogProps> = ({
         } catch (err: any) {
             console.error(err);
             const serverMessage =
-                err?.response?.data?.message ??
+                err?.response?.data?.message ||
                 (err?.response?.data?.errors
                     ? JSON.stringify(err.response.data.errors)
-                    : null) ??
-                err?.message ??
+                    : null) ||
+                err?.message ||
                 "Request failed";
             toast({ severity: "error", summary: "Error", detail: String(serverMessage), });
         } finally {
@@ -157,7 +157,7 @@ const RoomDialog: React.FC<RoomDialogProps> = ({
             draggable={false}
         >
             <Formik
-                initialValues={{ ...emptyModel, ...(initial ?? {}) }}
+                initialValues={{ ...emptyModel, ...(initial || {}) }}
                 validationSchema={RoomSchema}
                 enableReinitialize
                 onSubmit={handleSubmit}

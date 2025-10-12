@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace API.Models.Entities
 {
@@ -13,6 +15,10 @@ namespace API.Models.Entities
         public string? Street { get; set; }
         public string? City { get; set; }
         public string? Country { get; set; }
+
+        [JsonIgnore]
+        public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; }
     }

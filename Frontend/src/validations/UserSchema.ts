@@ -36,7 +36,7 @@ export const UserSchema = Yup.object().shape({
                         const { firstName, lastName, email } = this.parent;
 
                         const lowerPass = value.toLowerCase();
-                        const emailPrefix = email?.split("@")[0].toLowerCase() ?? "";
+                        const emailPrefix = email?.split("@")[0].toLowerCase() || "";
 
                         return !(
                             (firstName && lowerPass.includes(firstName.toLowerCase())) ||
