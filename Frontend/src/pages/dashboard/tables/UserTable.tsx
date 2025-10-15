@@ -69,7 +69,6 @@ const UserTable: React.FC = () => {
             window.location.reload();
         } catch (err) {
             console.error(err);
-            alert("Delete failed");
         }
     }, []);
 

@@ -8,6 +8,8 @@ import { Formik, Form, Field } from "formik";
 import { useToast } from "../../../contexts/ToastContext";
 import axiosInstance from "../../../config/axiosInstance";
 import { createBooking, updateBooking, type BookingPayload } from "../../../services/bookingServices";
+import { InputNumber } from "primereact/inputnumber";
+import { BookingSchema } from "../../../validations/BookingSchema";
 
 export const BookingStatus: Record<number, string> = {
     0: "Pending",
@@ -54,34 +56,61 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
     const { toast } = useToast();
     const [guests, setGuests] = useState<any[]>([]);
     const [rooms, setRooms] = useState<any[]>([]);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        if (!visible) return;
-        (async () => {
+        const fetchData = async () => {
             try {
+                setLoading(true);
+
                 const [guestsRes, roomsRes] = await Promise.all([
                     axiosInstance.get("/guests"),
                     axiosInstance.get("/rooms"),
                 ]);
 
-                setGuests(
-                    guestsRes.data.map((g: any) => ({
-                        label: g.name || `${g.firstName} ${g.lastName}`,
-                        value: g.guestID,
-                    }))
-                );
+                const guestsData = guestsRes.data;
+                const roomsData = roomsRes.data;
 
-                setRooms(
-                    roomsRes.data.map((r: any) => ({
-                        label: `${r.roomNumber} - ${r.hotelName || ""}`,
-                        value: r.roomID,
-                    }))
-                );
-            } catch (err) {
-                console.error(err);
-                toast({ severity: "error", summary: "Error", detail: "Failed to load guests or rooms" });
+                const guestOptions = (Array.isArray(guestsData) ? guestsData : []).map((guest: any) => {
+                    const guestId = guest.id || guest.guestID || guest.guestId || guest.ID;
+                    const guestName =
+                        guest.name ||
+                        `${guest.firstName ?? ""} ${guest.lastName ?? ""}`.trim() ||
+                        `Guest ${guestId}`;
+                    return {
+                        label: guestName,
+                        value: guestId,
+                    };
+                });
+
+                const roomOptions = (Array.isArray(roomsData) ? roomsData : []).map((room: any) => {
+                    const roomId = room.id || room.roomID || room.roomId || room.ID;
+                    const roomLabel = room.roomNumber
+                        ? `${room.roomNumber}${room.hotelName ? ` - ${room.hotelName}` : ""}`
+                        : room.name || `Room ${roomId}`;
+                    return {
+                        label: roomLabel,
+                        value: roomId,
+                    };
+                });
+
+                setGuests(guestOptions);
+                setRooms(roomOptions);
+            } catch (err: any) {
+                console.error("Error fetching guest/room data:", err);
+                toast({
+                    severity: "error",
+                    summary: "Error",
+                    detail: "Failed to load guests or rooms",
+                });
+            } finally {
+                setLoading(false);
             }
-        })();
+        };
+
+        if (visible) {
+            fetchData();
+        }
     }, [visible, toast]);
 
     const handleSubmit = async (values: BookingPayload, { setSubmitting }: any) => {
@@ -119,6 +148,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
             <Formik
                 initialValues={{ ...emptyModel, ...(initial || {}) }}
                 enableReinitialize
+                validationSchema={BookingSchema}
                 onSubmit={handleSubmit}
             >
                 {({ values, setFieldValue, isSubmitting }) => (
@@ -131,6 +161,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
                                 onChange={(e) => setFieldValue("guestID", e.value)}
                                 placeholder="Select guest"
                                 filter
+                                disabled={loading}
                                 className="w-full"
                             />
                         </div>
@@ -143,6 +174,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
                                 onChange={(e) => setFieldValue("roomID", e.value)}
                                 placeholder="Select room"
                                 filter
+                                disabled={loading}
                                 className="w-full"
                             />
                         </div>
@@ -183,7 +215,14 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
 
                             <div>
                                 <label className="block text-sm font-medium mb-1">Total Price (€)</label>
-                                <Field as={InputText} type="number" name="totalPrice" className="w-full" />
+                                <InputNumber
+                                    value={values.totalPrice}
+                                    onValueChange={(e) => setFieldValue("totalPrice", e.value)}
+                                    mode="currency"
+                                    currency="EUR"
+                                    locale="en-US"
+                                    className="w-full"
+                                />
                             </div>
                         </div>
 
@@ -206,8 +245,19 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
                         )}
 
                         <div className="flex justify-end gap-2 mt-4">
-                            <Button type="button" label="Cancel" icon="pi pi-times" onClick={onHide} className="p-button-text" />
-                            <Button type="submit" label={mode === "create" ? "Create" : "Save"} icon="pi pi-check" loading={isSubmitting} />
+                            <Button
+                                type="button"
+                                label="Cancel"
+                                icon="pi pi-times"
+                                onClick={onHide}
+                                className="p-button-text"
+                            />
+                            <Button
+                                type="submit"
+                                label={mode === "create" ? "Create" : "Save"}
+                                icon="pi pi-check"
+                                loading={isSubmitting}
+                            />
                         </div>
                     </Form>
                 )}

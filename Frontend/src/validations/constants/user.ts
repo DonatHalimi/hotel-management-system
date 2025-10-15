@@ -1,0 +1,6 @@
+export const UserConstants = {
+    MAX_FIRST_NAME_LENGTH: 20,
+    MAX_LAST_NAME_LENGTH: 20,
+    MAX_EMAIL_LENGTH: 100,
+    MIN_PASSWORD_LENGTH: 12
+};

@@ -31,7 +31,7 @@ const AppSidebar: React.FC = () => {
     const [user, setUser] = useState<User | null>(null);
     const [openMenus, setOpenMenus] = useState<{ [key: string]: boolean }>({
         userMgmt: true,
-        hotelsMgmt: false,
+        hotelsMgmt: true,
     });
 
     const navigate = useNavigate();
@@ -90,6 +90,7 @@ const AppSidebar: React.FC = () => {
                 children: [
                     { label: 'Hotels', icon: 'pi pi-building', path: '/hotels' },
                     { label: 'Rooms', icon: 'pi pi-address-book', path: '/rooms' },
+                    { label: 'Room Types', icon: 'pi pi-address-book', path: '/room-types' },
                     { label: 'Bookings', icon: 'pi pi-calendar', path: '/bookings' },
                 ],
             };

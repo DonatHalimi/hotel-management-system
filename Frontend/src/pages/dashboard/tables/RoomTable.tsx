@@ -26,108 +26,107 @@ export const RoomCondition: Record<number, string> = {
 };
 
 const RoomTable: React.FC = () => {
-    const [editingId, setEditingId] = useState<string | null>(null);
-    const [editVisible, setEditVisible] = useState(false);
-    const [editInitial, setEditInitial] = useState<any | null>(null);
-    const [createVisible, setCreateVisible] = useState(false);
-    const [viewVisible, setViewVisible] = useState(false);
-    const [viewData, setViewData] = useState<any | null>(null);
+        const [editingId, setEditingId] = useState<string | null>(null);
+        const [editVisible, setEditVisible] = useState(false);
+        const [editInitial, setEditInitial] = useState<any | null>(null);
+        const [createVisible, setCreateVisible] = useState(false);
+        const [viewVisible, setViewVisible] = useState(false);
+        const [viewData, setViewData] = useState<any | null>(null);
 
-    const columns: ColumnDef[] = [
-        { field: "roomNumber", header: "Room Number", body: (r) => r.roomNumber || "—" },
-        { field: "floorNumber", header: "Floor", body: (r) => r.floorNumber || "—" },
-        { field: "status", header: "Status", body: (r) => RoomStatus[r.status] || "Unknown" },
-        { field: "condition", header: "Condition", body: (r) => RoomCondition[r.condition] || "Unknown" },
-        { field: "hotelName", header: "Hotel", body: (r) => r.hotelName || "—" },
-        { field: "roomTypeName", header: "Room Type", body: (r) => r.roomTypeName || "—" },
-        { field: "notes", header: "Notes", body: (r) => r.notes || "—" },
-        { field: "isActive", header: "Active", body: (r) => (r.isActive ? "Yes" : "No") },
-    ];
+        const columns: ColumnDef[] = [
+            { field: "roomNumber", header: "Room Number", body: (r) => r.roomNumber || "—" },
+            { field: "floorNumber", header: "Floor", body: (r) => r.floorNumber || "—" },
+            { field: "status", header: "Status", body: (r) => RoomStatus[r.status] || "Unknown" },
+            { field: "condition", header: "Condition", body: (r) => RoomCondition[r.condition] || "Unknown" },
+            { field: "hotelName", header: "Hotel", body: (r) => r.hotelName || "—" },
+            { field: "roomTypeName", header: "Room Type", body: (r) => r.roomTypeName || "—" },
+            { field: "notes", header: "Notes", body: (r) => r.notes || "—" },
+            { field: "isActive", header: "Active", body: (r) => (r.isActive ? "Yes" : "No") },
+        ];
 
-    const openEditModal = useCallback(async (row: any) => {
-        const id = getId(row);
-        const res = await axiosInstance.get(`/rooms/${id}`);
-        setEditingId(id);
-        setEditInitial(res.data);
-        setEditVisible(true);
-    }, []);
+        const openEditModal = useCallback(async (row: any) => {
+            const id = getId(row);
+            const res = await axiosInstance.get(`/rooms/${id}`);
+            setEditingId(id);
+            setEditInitial(res.data);
+            setEditVisible(true);
+        }, []);
 
-    const openViewModal = useCallback(async (row: any) => {
-        const id = getId(row);
-        const res = await axiosInstance.get(`/rooms/${id}`);
-        setViewData(res.data);
-        setViewVisible(true);
-    }, []);
+        const openViewModal = useCallback(async (row: any) => {
+            const id = getId(row);
+            const res = await axiosInstance.get(`/rooms/${id}`);
+            setViewData(res.data);
+            setViewVisible(true);
+        }, []);
 
-    const handleEdit = useCallback(async (row: any) => {
-        await openEditModal(row);
-        setViewVisible(false);
-    }, [openEditModal]);
-
-    const handleDelete = useCallback(async (row: any) => {
-        const id = getId(row);
-        if (!id) return;
-        try {
-            await axiosInstance.delete(`/rooms/${id}`);
+        const handleEdit = useCallback(async (row: any) => {
+            await openEditModal(row);
             setViewVisible(false);
-            window.location.reload();
-        } catch (err) {
-            console.error(err);
-            alert("Delete failed");
-        }
-    }, []);
+        }, [openEditModal]);
 
-    return (
-        <EntityTable
-            title="Rooms"
-            columns={columns}
-            fetchUrl="/rooms"
-            getId={getId}
-            canView={true}
-            canEdit={hasRole(["Admin"])}
-            canDelete={hasRole(["Admin"])}
-            onView={openViewModal}
-            onEdit={openEditModal}
-            createButton={
-                <Button
-                    label="Create Room"
-                    icon="pi pi-plus"
-                    onClick={() => setCreateVisible(true)}
-                />
+        const handleDelete = useCallback(async (row: any) => {
+            const id = getId(row);
+            if (!id) return;
+            try {
+                await axiosInstance.delete(`/rooms/${id}`);
+                setViewVisible(false);
+                window.location.reload();
+            } catch (err) {
+                console.error(err);
             }
-            createDialog={
-                <RoomDialog
-                    visible={createVisible}
-                    onHide={() => setCreateVisible(false)}
-                    onSaved={() => window.location.reload()}
-                    mode="create"
-                />
-            }
-            editDialog={
-                <RoomDialog
-                    visible={editVisible}
-                    onHide={() => {
-                        setEditVisible(false);
-                        setEditingId(null);
-                        setEditInitial(null);
-                    }}
-                    onSaved={() => window.location.reload()}
-                    mode="edit"
-                    id={editingId}
-                    initial={editInitial}
-                />
-            }
-            viewDialog={
-                <RoomDetails
-                    visible={viewVisible}
-                    onHide={() => setViewVisible(false)}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                    room={viewData}
-                />
-            }
-        />
-    );
-};
+        }, []);
+
+        return (
+            <EntityTable
+                title="Rooms"
+                columns={columns}
+                fetchUrl="/rooms"
+                getId={getId}
+                canView={true}
+                canEdit={hasRole(["Admin"])}
+                canDelete={hasRole(["Admin"])}
+                onView={openViewModal}
+                onEdit={openEditModal}
+                createButton={
+                    <Button
+                        label="Create Room"
+                        icon="pi pi-plus"
+                        onClick={() => setCreateVisible(true)}
+                    />
+                }
+                createDialog={
+                    <RoomDialog
+                        visible={createVisible}
+                        onHide={() => setCreateVisible(false)}
+                        onSaved={() => window.location.reload()}
+                        mode="create"
+                    />
+                }
+                editDialog={
+                    <RoomDialog
+                        visible={editVisible}
+                        onHide={() => {
+                            setEditVisible(false);
+                            setEditingId(null);
+                            setEditInitial(null);
+                        }}
+                        onSaved={() => window.location.reload()}
+                        mode="edit"
+                        id={editingId}
+                        initial={editInitial}
+                    />
+                }
+                viewDialog={
+                    <RoomDetails
+                        visible={viewVisible}
+                        onHide={() => setViewVisible(false)}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                        room={viewData}
+                    />
+                }
+            />
+        );
+    };
 
 export default RoomTable;

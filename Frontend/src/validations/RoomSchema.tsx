@@ -4,7 +4,7 @@ import { RoomConstants } from './constants/room';
 export const RoomSchema = Yup.object().shape({
     roomNumber: Yup.string()
         .required("Room number is required")
-        .matches(/^[A-Za-z0-9-]+$/, "Room number can only contain letters, numbers, and hyphens")
+        .matches(/^[A-Za-z0-9-]+$/, "Room number can only contain letters, numbers and hyphens")
         .max(RoomConstants.MAX_ROOM_NUMBER_LENGTH, `Room number cannot exceed ${RoomConstants.MAX_ROOM_NUMBER_LENGTH} characters`),
 
     floorNumber: Yup.number()

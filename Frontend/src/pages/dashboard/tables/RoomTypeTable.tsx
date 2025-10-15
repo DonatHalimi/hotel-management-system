@@ -1,16 +1,24 @@
-import React, { useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 import EntityTable from "../../../components/table/EntityTable";
 import { type ColumnDef } from "../../../components/table/DataTableWrapper";
 import axiosInstance from "../../../config/axiosInstance";
 import { hasRole } from "../../../utils/auth";
 import { Button } from "primereact/button";
-import GuestDialog from "../dialogs/GuestDialog";
-import GuestDetails from "../details/GuestDetails";
+import RoomTypeDialog from "../dialogs/RoomTypeDialog";
+import RoomTypeDetails from "../details/RoomTypeDetails";
 
-const getId = (row: any) =>
-    row.guestID || row.GuestID || row.id || row.Id || row._id;
+const getId = (row: any) => row.roomTypeID || row.RoomTypeID || row.id || row.Id || row._id;
 
-const GuestTable: React.FC = () => {
+export const BedType: Record<number, string> = {
+    0: "Single",
+    1: "Double",
+    2: "Queen",
+    3: "King",
+    4: "TwinBeds",
+    5: "Bunk",
+};
+
+const RoomTypeTable = () => {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editVisible, setEditVisible] = useState(false);
     const [editInitial, setEditInitial] = useState<any | null>(null);
@@ -19,18 +27,18 @@ const GuestTable: React.FC = () => {
     const [viewData, setViewData] = useState<any | null>(null);
 
     const columns: ColumnDef[] = [
-        { field: "firstName", header: "First Name", body: (r) => r.firstName || "—" },
-        { field: "lastName", header: "Last Name", body: (r) => r.lastName || "—" },
-        { field: "idNumber", header: "ID Number", body: (r) => r.idNumber || "—" },
-        { field: "email", header: "Email", body: (r) => r.email || "—" },
-        { field: "phoneNumber", header: "Phone Number", body: (r) => r.phoneNumber || "—" },
-        { field: "city", header: "City", body: (r) => r.city || "—" },
-        { field: "country", header: "Country", body: (r) => r.country || "—" },
+        { field: "name", header: "Name", body: (r) => r.name || "—" },
+        { field: "description", header: "Description", body: (r) => r.description || "—" },
+        { field: "maxOccupancy", header: "Max Occupancy", body: (r) => r.maxOccupancy || "—" },
+        { field: "bedCount", header: "Bed Count", body: (r) => r.bedCount || "—" },
+        { field: "notes", header: "Notes", body: (r) => r.notes || "—" },
+        { field: "bedType", header: "Bed Type", body: (r) => BedType[r.bedType] || "Unknown" },
+        { field: "basePrice", header: "Base Price", body: (r) => r.basePrice || "—" },
     ];
 
     const openEditModal = useCallback(async (row: any) => {
         const id = getId(row);
-        const res = await axiosInstance.get(`/guests/${id}`);
+        const res = await axiosInstance.get(`/room-types/${id}`);
         setEditingId(id);
         setEditInitial(res.data);
         setEditVisible(true);
@@ -38,7 +46,7 @@ const GuestTable: React.FC = () => {
 
     const openViewModal = useCallback(async (row: any) => {
         const id = getId(row);
-        const res = await axiosInstance.get(`/guests/${id}`);
+        const res = await axiosInstance.get(`/room-types/${id}`);
         setViewData(res.data);
         setViewVisible(true);
     }, []);
@@ -52,7 +60,7 @@ const GuestTable: React.FC = () => {
         const id = getId(row);
         if (!id) return;
         try {
-            await axiosInstance.delete(`/guests/${id}`);
+            await axiosInstance.delete(`/room-types/${id}`);
             setViewVisible(false);
             window.location.reload();
         } catch (err) {
@@ -62,26 +70,24 @@ const GuestTable: React.FC = () => {
 
     return (
         <EntityTable
-            title="Guests"
+            title="Room Types"
             columns={columns}
-            fetchUrl="/guests"
+            fetchUrl="/room-types"
             getId={getId}
             canView={true}
-            canEdit={hasRole(["Admin", "Receptionist"])}
+            canEdit={hasRole(["Admin"])}
             canDelete={hasRole(["Admin"])}
             onView={openViewModal}
             onEdit={openEditModal}
             createButton={
-                hasRole(["Admin", "Receptionist"]) ? (
-                    <Button
-                        label="Create Guest"
-                        icon="pi pi-plus"
-                        onClick={() => setCreateVisible(true)}
-                    />
-                ) : undefined
+                <Button
+                    label="Create Room Type"
+                    icon="pi pi-plus"
+                    onClick={() => setCreateVisible(true)}
+                />
             }
             createDialog={
-                <GuestDialog
+                <RoomTypeDialog
                     visible={createVisible}
                     onHide={() => setCreateVisible(false)}
                     onSaved={() => window.location.reload()}
@@ -89,7 +95,7 @@ const GuestTable: React.FC = () => {
                 />
             }
             editDialog={
-                <GuestDialog
+                <RoomTypeDialog
                     visible={editVisible}
                     onHide={() => {
                         setEditVisible(false);
@@ -103,16 +109,16 @@ const GuestTable: React.FC = () => {
                 />
             }
             viewDialog={
-                <GuestDetails
+                <RoomTypeDetails
                     visible={viewVisible}
                     onHide={() => setViewVisible(false)}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
-                    guest={viewData}
+                    roomType={viewData}
                 />
             }
         />
     );
 };
 
-export default GuestTable;
+export default RoomTypeTable;

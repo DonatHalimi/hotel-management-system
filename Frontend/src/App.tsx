@@ -17,6 +17,7 @@ import RoomTable from './pages/dashboard/tables/RoomTable';
 import RoleTable from './pages/dashboard/tables/RoleTable';
 import GuestTable from './pages/dashboard/tables/GuestTable';
 import BookingTable from './pages/dashboard/tables/BookingTable';
+import RoomTypeTable from './pages/dashboard/tables/RoomTypeTable';
 
 const App = () => {
   return (
@@ -46,6 +47,7 @@ const App = () => {
                 <Route path="/roles" element={<RoleTable />} />
                 <Route path="/rooms" element={<RoomTable />} />
                 <Route path="/bookings" element={<BookingTable />} />
+                <Route path="/room-types" element={<RoomTypeTable />} />
               </Route>
 
               <Route path='/settings' element={<div>Settings Page</div>} />
