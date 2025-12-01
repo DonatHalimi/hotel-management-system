@@ -33,3 +33,5 @@ export interface UpdatePayload {
 export const createUser = async (payload: CreatePayload) => axiosInstance.post("/users", payload);
 
 export const updateUser = async (id: string, payload: UpdatePayload) => axiosInstance.put(`/users/${id}`, payload);
+
+export const updateCurrentUser = (payload: any) => axiosInstance.put("/users/me", payload);

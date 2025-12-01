@@ -23,6 +23,8 @@ const AvatarMenu = ({ user, avatarUrl }: AvatarMenuProps) => {
     const avatarItems: MenuItem[] = [
         { label: 'Profile', icon: 'pi pi-user', command: () => navigate('/profile/me') },
         { label: 'Dashboard', icon: 'pi pi-chart-bar', command: () => navigate('/dashboard') },
+        { label: 'Settings', icon: 'pi pi-cog', command: () => navigate('/settings') },
+        { separator: true },
         {
             label: 'Log out',
             icon: 'pi pi-sign-out',

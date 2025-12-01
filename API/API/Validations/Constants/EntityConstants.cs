@@ -100,4 +100,20 @@
         public const int MAX_GUESTS_PER_BOOKING = 10;
         public const int MAX_CANCELLATION_REASON_LENGTH = 500;
     }
+
+    public static class PaymentConstants
+    {
+        public const string ENTITY_NAME = "payment";
+        public const int MAX_TRANSACTION_REF_LENGTH = 200;
+        public const decimal MIN_AMOUNT = 0;
+        public const decimal MAX_AMOUNT = 999999.99m;
+    }
+
+    public static class InvoiceConstants
+    {
+        public const string ENTITY_NAME = "invoice";
+        public const int MAX_INVOICE_NUMBER_LENGTH = 20;
+        public const decimal MIN_AMOUNT_DUE = 0;
+        public const decimal MAX_AMOUNT_DUE = 999999.99m;
+    }
 }

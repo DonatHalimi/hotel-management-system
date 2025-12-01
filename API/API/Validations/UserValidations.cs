@@ -69,6 +69,42 @@ namespace API.Validations
         }
     }
 
+    public class UpdateUserSelfDTOValidation : AbstractValidator<UpdateUserSelfDTO>
+    {
+        public UpdateUserSelfDTOValidation()
+        {
+            RuleFor(x => x.FirstName)
+                .MaximumLength(50).WithMessage("First name cannot exceed 50 characters")
+                .Matches("^[A-Z][a-z]*$").WithMessage("First name must start with a capital letter and contain only letters")
+                .MaximumLength(UserConstants.MAX_FIRST_NAME_LENGTH).WithMessage($"First name cannot exceed {UserConstants.MAX_FIRST_NAME_LENGTH} characters")
+                .When(x => x.FirstName != null);
+
+            RuleFor(x => x.LastName)
+                .MaximumLength(50).WithMessage("First name cannot exceed 50 characters")
+                .Matches("^[A-Z][a-z]*$").WithMessage("Last name must start with a capital letter and contain only letters")
+                .MaximumLength(UserConstants.MAX_LAST_NAME_LENGTH).WithMessage($"Last name cannot exceed {UserConstants.MAX_LAST_NAME_LENGTH} characters")
+                .When(x => x.LastName != null);
+
+            RuleFor(x => x.Email)
+                .Cascade(CascadeMode.Stop)
+                .EmailAddress().WithMessage("Invalid email format")
+                .MaximumLength(UserConstants.MAX_EMAIL_LENGTH).WithMessage($"Email cannot exceed {UserConstants.MAX_EMAIL_LENGTH} characters")
+                .When(x => !string.IsNullOrEmpty(x.Email));
+
+            RuleFor(x => x.CurrentPassword)
+                .NotEmpty().WithMessage("Current password is required");
+
+            RuleFor(x => x.NewPassword)
+                .ApplyPasswordRules("New Password", x => x.FirstName, x => x.LastName, x => x.Email)
+                .When(x => !string.IsNullOrEmpty(x.NewPassword));
+
+            RuleFor(x => x).Must(x => x.NewPassword != x.CurrentPassword)
+                .WithMessage("New password must be different from current password")
+                .When(x => !string.IsNullOrEmpty(x.NewPassword) && !string.IsNullOrEmpty(x.CurrentPassword));
+        }
+    }
+
+
     public static class EmailValidation
     {
         public static bool DoesEmailExist(string email, AppDbContext context)

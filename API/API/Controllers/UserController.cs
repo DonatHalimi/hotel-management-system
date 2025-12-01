@@ -7,11 +7,13 @@ using API.Services;
 using API.Validations;
 using API.Validations.Constants;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace API.Controllers
@@ -23,6 +25,7 @@ namespace API.Controllers
      AppDbContext context,
      IValidator<CreateUserDTO> createValidator,
      IValidator<UpdateUserDTO> updateValidator,
+     IValidator<UpdateUserSelfDTO> updateSelfValidator,
      IValidator<BulkDeleteDTO> bulkDeleteValidator) : ControllerBase
     {
         // GET: api/users
@@ -160,6 +163,59 @@ namespace API.Controllers
 
             if (updateDto.RoleID.HasValue)
                 user.RoleID = updateDto.RoleID.Value;
+
+            user.UpdatedAt = DateTime.UtcNow;
+
+            try
+            {
+                await context.SaveChangesAsync();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    ErrorCode = "USER_UPDATE_FAILED",
+                    ex.Message
+                });
+            }
+        }
+
+        // PUT: api/users/me
+        [HttpPut("me")]
+        [Auth]
+        public async Task<IActionResult> UpdateMyProfile([FromBody] UpdateUserSelfDTO dto)
+        {
+            var validationResult = await updateSelfValidator.ValidateAsync(dto);
+            if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
+
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst("sub");
+            if (userIdClaim == null) return Unauthorized();
+
+            if (!Guid.TryParse(userIdClaim.Value, out var userId)) return Unauthorized();
+
+            var user = await context.Users.FindAsync(userId);
+            if (user == null) return NotFound();
+
+            var changingSensitive = (!string.IsNullOrEmpty(dto.NewPassword) || (!string.IsNullOrEmpty(dto.Email) && dto.Email != user.Email));
+            if (changingSensitive)
+            {
+                if (string.IsNullOrEmpty(dto.CurrentPassword))
+                    return BadRequest(new { Error = "Current password required for this operation" });
+
+                if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.Password ?? string.Empty))
+                    return BadRequest(new { Error = "Current password is incorrect" });
+            }
+
+            if (dto.FirstName != null) user.FirstName = dto.FirstName;
+            if (dto.LastName != null) user.LastName = dto.LastName;
+            if (dto.PhoneNumber != null) user.PhoneNumber = dto.PhoneNumber;
+            if (dto.Email != null) user.Email = dto.Email;
+
+            if (!string.IsNullOrEmpty(dto.NewPassword))
+            {
+                user.Password = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+            }
 
             user.UpdatedAt = DateTime.UtcNow;
 

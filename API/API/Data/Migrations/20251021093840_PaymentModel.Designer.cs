@@ -4,6 +4,7 @@ using API.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251021093840_PaymentModel")]
+    partial class PaymentModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -174,91 +177,6 @@ namespace API.Data.Migrations
                     b.HasKey("HotelID");
 
                     b.ToTable("Hotels");
-                });
-
-            modelBuilder.Entity("API.Models.Entities.Invoice", b =>
-                {
-                    b.Property<Guid>("InvoiceID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("BookingID")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("Discounts")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime?>("DueDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("InvoiceNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("IssueDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("Subtotal")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("Tax")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("InvoiceID");
-
-                    b.HasIndex("BookingID");
-
-                    b.ToTable("Invoices");
-                });
-
-            modelBuilder.Entity("API.Models.Entities.Payment", b =>
-                {
-                    b.Property<Guid>("PaymentID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<Guid>("BookingID")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("BookingID1")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Method")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("PaymentDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<string>("TransactionReference")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("PaymentID");
-
-                    b.HasIndex("BookingID");
-
-                    b.HasIndex("BookingID1");
-
-                    b.ToTable("Payments");
                 });
 
             modelBuilder.Entity("API.Models.Entities.Role", b =>
@@ -462,32 +380,6 @@ namespace API.Data.Migrations
                     b.Navigation("Room");
                 });
 
-            modelBuilder.Entity("API.Models.Entities.Invoice", b =>
-                {
-                    b.HasOne("API.Models.Entities.Booking", "Booking")
-                        .WithMany()
-                        .HasForeignKey("BookingID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Booking");
-                });
-
-            modelBuilder.Entity("API.Models.Entities.Payment", b =>
-                {
-                    b.HasOne("API.Models.Entities.Booking", "Booking")
-                        .WithMany()
-                        .HasForeignKey("BookingID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("API.Models.Entities.Booking", null)
-                        .WithMany("Payments")
-                        .HasForeignKey("BookingID1");
-
-                    b.Navigation("Booking");
-                });
-
             modelBuilder.Entity("API.Models.Entities.Room", b =>
                 {
                     b.HasOne("API.Models.Entities.Hotel", "Hotel")
@@ -516,11 +408,6 @@ namespace API.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Role");
-                });
-
-            modelBuilder.Entity("API.Models.Entities.Booking", b =>
-                {
-                    b.Navigation("Payments");
                 });
 
             modelBuilder.Entity("API.Models.Entities.Guest", b =>

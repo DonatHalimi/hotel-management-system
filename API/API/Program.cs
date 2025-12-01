@@ -18,6 +18,8 @@ using System.Text;
 using static API.Validations.BookingValidations;
 using static API.Validations.GuestValidations;
 using static API.Validations.HotelValidations;
+using static API.Validations.InvoiceValidations;
+using static API.Validations.PaymentValidations;
 
 DotNetEnv.Env.Load();
 
@@ -108,6 +110,7 @@ builder.Services.AddScoped<IValidator<LoginDTO>, LoginValidation>();
 
 builder.Services.AddScoped<IValidator<CreateUserDTO>, CreateUserDTOValidation>();
 builder.Services.AddScoped<IValidator<UpdateUserDTO>, UpdateUserDTOValidation>();
+builder.Services.AddScoped<IValidator<UpdateUserSelfDTO>, UpdateUserSelfDTOValidation>();
 
 builder.Services.AddScoped<IValidator<CreateRoleDTO>, CreateRoleDTOValidation>();
 builder.Services.AddScoped<IValidator<UpdateRoleDTO>, UpdateRoleDTOValidation>()
@@ -126,6 +129,12 @@ builder.Services.AddScoped<IValidator<UpdateGuestDTO>, UpdateGuestValidation>();
 
 builder.Services.AddScoped<IValidator<CreateBookingDTO>, CreateBookingValidation>();
 builder.Services.AddScoped<IValidator<UpdateBookingDTO>, UpdateBookingValidation>();
+
+builder.Services.AddScoped<IValidator<CreatePaymentDTO>, CreatePaymentValidation>();
+builder.Services.AddScoped<IValidator<UpdatePaymentDTO>, UpdatePaymentValidation>();
+
+builder.Services.AddScoped<IValidator<CreateInvoiceDTO>, CreateInvoiceValidation>();
+builder.Services.AddScoped<IValidator<UpdateInvoiceDTO>, UpdateInvoiceValidation>();
 
 builder.Services.AddScoped<IValidator<VerifyEmailDTO>, VerifyEmailValidation>();
 builder.Services.AddScoped<IValidator<ResendVerificationDTO>, ResendVerificationValidation>();

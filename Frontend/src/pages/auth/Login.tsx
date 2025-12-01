@@ -26,11 +26,7 @@ const Login = () => {
             const serverErrors = err.response?.data?.errors;
             if (serverErrors) setErrors(serverErrors);
 
-            toast({
-                severity: "error",
-                summary: "Error",
-                detail: err.response?.data?.message || "Login failed. Please try again",
-            });
+            toast({ severity: "error", summary: "Error", detail: err.response?.data?.message || "Login failed. Please try again", });
         } finally {
             setSubmitting(false);
         }

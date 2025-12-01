@@ -5,7 +5,7 @@ import { Avatar } from 'primereact/avatar';
 import { Divider } from 'primereact/divider';
 import { Badge } from 'primereact/badge';
 import { Menubar } from 'primereact/menubar';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { getCurrentUser } from '../../services/authServices';
 import AvatarMenu from '../navbar/AvatarMenu';
 import { hasRole } from '../../utils/auth';
@@ -92,6 +92,7 @@ const AppSidebar: React.FC = () => {
                     { label: 'Rooms', icon: 'pi pi-address-book', path: '/rooms' },
                     { label: 'Room Types', icon: 'pi pi-address-book', path: '/room-types' },
                     { label: 'Bookings', icon: 'pi pi-calendar', path: '/bookings' },
+                    { label: 'Payments', icon: 'pi pi-money-bill', path: '/payments' },
                 ],
             };
 
@@ -173,8 +174,16 @@ const AppSidebar: React.FC = () => {
             </div>
 
             <div className="hidden md:flex fixed left-0 top-0 h-full w-64 bg-white shadow-lg border-r border-gray-200 flex-col z-40">
-                <div className="p-6 border-b border-gray-200 text-lg font-semibold">Home</div>
-
+                <Link to="/" className="block">
+                    <div className="flex items-center gap-3 p-6 border-b border-gray-200 hover:bg-gray-50 transition-colors">
+                        <img
+                            alt="logo"
+                            src="https://primefaces.org/cdn/primereact/images/logo.png"
+                            className="h-10 w-10 object-contain"
+                        />
+                        <span className="text-lg font-semibold text-gray-800">Home</span>
+                    </div>
+                </Link>
                 <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
                     {menuItems.map(renderMenuButton)}
                 </nav>

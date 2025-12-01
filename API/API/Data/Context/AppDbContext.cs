@@ -8,12 +8,15 @@ namespace API.Data.Context
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<Hotel> Hotels { get; set; }
-
         public DbSet<Room> Rooms { get; set; }
         public DbSet<RoomType> RoomTypes { get; set; }
-
         public DbSet<Guest> Guests { get; set; }
         public DbSet<Booking> Bookings { get; set; }
+
+        public DbSet<Payment> Payments { get; set; }
+
+        public DbSet<Invoice> Invoices { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -47,6 +50,18 @@ namespace API.Data.Context
                 .WithOne(b => b.Room)
                 .HasForeignKey(b => b.RoomID)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Payment>()
+                .HasOne(p => p.Booking)
+                .WithMany()
+                .HasForeignKey(p => p.BookingID)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Invoice>()
+                .HasOne(i => i.Booking)
+                .WithMany()
+                .HasForeignKey(i => i.BookingID)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

@@ -4,6 +4,7 @@ using API.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251028145159_InvoiceAndInvoiceLineItemAddition")]
+    partial class InvoiceAndInvoiceLineItemAddition
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -217,6 +220,31 @@ namespace API.Data.Migrations
                     b.HasIndex("BookingID");
 
                     b.ToTable("Invoices");
+                });
+
+            modelBuilder.Entity("API.Models.Entities.InvoiceLineItem", b =>
+                {
+                    b.Property<Guid>("InvoiceLineItemID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("InvoiceID")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("InvoiceLineItemID");
+
+                    b.HasIndex("InvoiceID");
+
+                    b.ToTable("InvoiceLineItems");
                 });
 
             modelBuilder.Entity("API.Models.Entities.Payment", b =>
@@ -473,6 +501,17 @@ namespace API.Data.Migrations
                     b.Navigation("Booking");
                 });
 
+            modelBuilder.Entity("API.Models.Entities.InvoiceLineItem", b =>
+                {
+                    b.HasOne("API.Models.Entities.Invoice", "Invoice")
+                        .WithMany("LineItems")
+                        .HasForeignKey("InvoiceID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Invoice");
+                });
+
             modelBuilder.Entity("API.Models.Entities.Payment", b =>
                 {
                     b.HasOne("API.Models.Entities.Booking", "Booking")
@@ -531,6 +570,11 @@ namespace API.Data.Migrations
             modelBuilder.Entity("API.Models.Entities.Hotel", b =>
                 {
                     b.Navigation("Rooms");
+                });
+
+            modelBuilder.Entity("API.Models.Entities.Invoice", b =>
+                {
+                    b.Navigation("LineItems");
                 });
 
             modelBuilder.Entity("API.Models.Entities.Role", b =>

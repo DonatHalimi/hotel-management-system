@@ -1,5 +1,6 @@
 ﻿using API.Models.Enums;
 using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace API.Models.Entities
@@ -29,6 +30,9 @@ namespace API.Models.Entities
         public DateTime? CancellationDate { get; set; }
         public string? CancellationReason { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        [JsonIgnore]
+        public ICollection<Payment> Payments { get; set; } = new List<Payment>();
+
         public DateTime? UpdatedAt { get; set; }
     }
 }

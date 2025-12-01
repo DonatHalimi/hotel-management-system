@@ -31,4 +31,3 @@ export const RoomTypeSchema = Yup.object().shape({
         .min(0, "Size cannot be negative")
         .typeError("Size must be a number"),
 });
-
