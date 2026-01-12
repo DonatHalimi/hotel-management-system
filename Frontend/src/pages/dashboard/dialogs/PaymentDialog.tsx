@@ -1,38 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { Dialog } from 'primereact/dialog';
-import { InputText } from 'primereact/inputtext';
-import { Calendar } from 'primereact/calendar';
-import { Dropdown } from 'primereact/dropdown';
+import { ErrorMessage, Field, Form, Formik } from 'formik';
 import { Button } from 'primereact/button';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
-import { useToast } from '../../../contexts/ToastContext';
-import { PaymentMethod, PaymentStatus } from '../tables/PaymentTable';
+import { Calendar } from 'primereact/calendar';
+import { Dialog } from 'primereact/dialog';
+import { Dropdown } from 'primereact/dropdown';
+import { InputText } from 'primereact/inputtext';
+import React, { useEffect, useState } from 'react';
 import axiosInstance from '../../../config/axiosInstance';
+import { useToast } from '../../../contexts/ToastContext';
+import { createPayment, emptyModel, updatePayment, type BookingOption, type PaymentDialogProps, type PaymentPayload } from '../../../services/paymentServices';
 import { PaymentSchema } from '../../../validations/PaymentSchema';
-import { createPayment, updatePayment, type PaymentPayload } from '../../../services/paymentServices';
-
-type PaymentDialogProps = {
-    visible: boolean;
-    onHide: () => void;
-    onSaved?: () => void;
-    initial?: Partial<PaymentPayload> | null;
-    mode?: 'create' | 'edit';
-    id?: string | null;
-};
-
-const emptyModel: PaymentPayload = {
-    bookingID: '',
-    amount: 0,
-    method: 0,
-    status: 0,
-    transactionReference: '',
-    paymentDate: new Date().toISOString(),
-};
-
-interface BookingOption {
-    label: string;
-    value: string;
-};
+import { PaymentMethod, PaymentStatus } from '../tables/PaymentTable';
 
 const PaymentDialog: React.FC<PaymentDialogProps> = ({
     visible,

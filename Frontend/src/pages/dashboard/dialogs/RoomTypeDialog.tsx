@@ -1,49 +1,15 @@
-import React from "react";
+import { ErrorMessage, Field, Form, Formik } from "formik";
+import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
+import { Dropdown } from "primereact/dropdown";
+import { InputNumber } from "primereact/inputnumber";
+import { InputSwitch } from "primereact/inputswitch";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
-import { InputNumber } from "primereact/inputnumber";
-import { Dropdown } from "primereact/dropdown";
-import { InputSwitch } from "primereact/inputswitch";
-import { Button } from "primereact/button";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import React from "react";
 import { useToast } from "../../../contexts/ToastContext";
-import { createRoomType, updateRoomType, type RoomTypePayload } from "../../../services/roomTypeService";
+import { BedTypeOptions, createRoomType, emptyModel, updateRoomType, type RoomTypeDialogProps, type RoomTypePayload } from "../../../services/roomTypeService";
 import { RoomTypeSchema } from "../../../validations/RoomTypeSchema";
-
-type RoomTypeDialogProps = {
-    visible: boolean;
-    onHide: () => void;
-    onSaved?: () => void;
-    initial?: Partial<RoomTypePayload> | null;
-    mode?: "create" | "edit";
-    id?: string | null;
-};
-
-const BedTypeOptions = [
-    { label: "Single", value: 0 },
-    { label: "Double", value: 1 },
-    { label: "Queen", value: 2 },
-    { label: "King", value: 3 },
-    { label: "Twin", value: 4 },
-    { label: "Bunk", value: 5 },
-];
-
-const emptyModel: RoomTypePayload = {
-    name: "",
-    description: "",
-    maxOccupancy: 1,
-    bedCount: 1,
-    bedType: 1,
-    basePrice: 0,
-    sizeSqft: 0,
-    hasBalcony: false,
-    hasKitchen: false,
-    hasAirConditioning: false,
-    hasWifi: false,
-    isSmokingAllowed: false,
-    isActive: true,
-};
 
 const RoomTypeDialog: React.FC<RoomTypeDialogProps> = ({
     visible,

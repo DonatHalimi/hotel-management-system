@@ -1,5 +1,5 @@
-import { createContext, useContext, useRef } from 'react';
 import { Toast } from 'primereact/toast';
+import { createContext, useContext, useRef } from 'react';
 
 type ToastContextType = {
     toast: (toastProps: any) => void;

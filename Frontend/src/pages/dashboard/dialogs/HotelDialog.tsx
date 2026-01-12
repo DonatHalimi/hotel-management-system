@@ -1,39 +1,22 @@
-import React from 'react';
+import { ErrorMessage, Field, Form, Formik } from 'formik';
+import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
-import { Button } from 'primereact/button';
 import { ToggleButton } from 'primereact/togglebutton';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
+import React from 'react';
 import { useToast } from '../../../contexts/ToastContext';
-import { createHotel, updateHotel, type HotelPayload } from '../../../services/hotelServices';
+import { createHotel, emptyModel, updateHotel, type HotelDialogProps, type HotelPayload } from '../../../services/hotelServices';
 import { HotelSchema } from '../../../validations/HotelSchema';
 
-type HotelDialogProps = {
-    visible: boolean;
-    onHide: () => void;
-    onSaved?: () => void;
-    initial?: Partial<HotelPayload> | null;
-    mode?: 'create' | 'edit';
-    id?: string | null;
-};
-
-const emptyModel: HotelPayload = {
-    name: '',
-    description: '',
-    email: '',
-    phoneNumber: '',
-    city: '',
-    country: '',
-    hasWifi: false,
-    hasParking: false,
-    hasPool: false,
-    hasGym: false,
-    hasSpa: false,
-    petFriendly: false,
-};
-
-const HotelDialog: React.FC<HotelDialogProps> = ({ visible, onHide, onSaved, initial = null, mode = 'create', id }) => {
+const HotelDialog: React.FC<HotelDialogProps> = ({
+    visible,
+    onHide,
+    onSaved,
+    initial = null,
+    mode = 'create',
+    id
+}) => {
     const { toast } = useToast();
 
     const handleSubmit = async (values: HotelPayload, { setSubmitting }: any) => {

@@ -1,9 +1,9 @@
-import { Dialog } from "primereact/dialog";
+import { Field, Form, Formik } from "formik";
 import { Button } from "primereact/button";
+import { Dialog } from "primereact/dialog";
 import { Divider } from "primereact/divider";
 import { InputText } from "primereact/inputtext";
 import { Password } from "primereact/password";
-import { Formik, Form, Field } from "formik";
 import { UpdateUserSchema } from "../../../validations/UserSchema";
 
 interface Props {

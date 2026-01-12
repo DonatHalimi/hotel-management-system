@@ -1,33 +1,22 @@
-import React, { useEffect, useState } from "react";
-import { Dialog } from "primereact/dialog";
-import { InputText } from "primereact/inputtext";
+import { ErrorMessage, Field, Form, Formik } from "formik";
 import { Button } from "primereact/button";
+import { Dialog } from "primereact/dialog";
 import { Dropdown } from "primereact/dropdown";
-import { Formik, Form, Field, ErrorMessage } from "formik";
-import { useToast } from "../../../contexts/ToastContext";
-import { createUser, updateUser, type UserPayload } from "../../../services/userServices";
-import { UserSchema } from "../../../validations/UserSchema";
+import { InputText } from "primereact/inputtext";
+import React, { useEffect, useState } from "react";
 import axiosInstance from "../../../config/axiosInstance";
+import { useToast } from "../../../contexts/ToastContext";
+import { createUser, emptyModel, updateUser, type UserDialogProps, type UserPayload } from "../../../services/userServices";
+import { UserSchema } from "../../../validations/UserSchema";
 
-type UserDialogProps = {
-    visible: boolean;
-    onHide: () => void;
-    onSaved?: () => void;
-    initial?: Partial<UserPayload> | null;
-    mode?: "create" | "edit";
-    id?: string | null;
-};
-
-const emptyModel: UserPayload = {
-    firstName: "",
-    lastName: "",
-    email: "",
-    phoneNumber: "",
-    password: "",
-    roleID: null,
-};
-
-const UserDialog: React.FC<UserDialogProps> = ({ visible, onHide, onSaved, initial = null, mode = "create", id }) => {
+const UserDialog: React.FC<UserDialogProps> = ({
+    visible,
+    onHide,
+    onSaved,
+    initial = null,
+    mode = "create",
+    id
+}) => {
     const { toast } = useToast();
     const [roleOptions, setRoleOptions] = useState<{ label: string; value: string }[]>([]);
 

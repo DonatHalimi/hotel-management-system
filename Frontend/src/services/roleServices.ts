@@ -1,5 +1,19 @@
 import axiosInstance from '../config/axiosInstance';
 
+export type RoleDialogProps = {
+    visible: boolean;
+    onHide: () => void;
+    onSaved?: () => void;
+    initial?: Partial<RolePayload> | null;
+    mode?: 'create' | 'edit';
+    id?: string | null;
+};
+
+export const emptyModel: RolePayload = {
+    name: '',
+    description: '',
+};
+
 export interface RolePayload {
     name: string | null;
     description?: string | null;

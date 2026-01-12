@@ -1,9 +1,9 @@
-import React from "react";
 import { InputText } from "primereact/inputtext";
-import { RoomCondition, RoomStatus } from "../tables/RoomTable";
 import { InputTextarea } from "primereact/inputtextarea";
 import { ToggleButton } from "primereact/togglebutton";
+import React from "react";
 import DetailsSidebar from "../../../components/layout/DetailsSidebar";
+import { RoomCondition, RoomStatus } from "../tables/RoomTable";
 
 type RoomDetailsProps = {
     visible: boolean;

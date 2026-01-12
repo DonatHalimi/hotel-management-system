@@ -1,7 +1,7 @@
-import React from "react";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import { ToggleButton } from "primereact/togglebutton";
+import React from "react";
 import DetailsSidebar from "../../../components/layout/DetailsSidebar";
 
 type RoomTypeDetailsProps = {

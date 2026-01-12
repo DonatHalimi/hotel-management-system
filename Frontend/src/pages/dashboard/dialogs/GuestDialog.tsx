@@ -1,31 +1,11 @@
-import React from 'react';
+import { ErrorMessage, Field, Form, Formik } from 'formik';
+import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
-import { Button } from 'primereact/button';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
+import React from 'react';
 import { useToast } from '../../../contexts/ToastContext';
-import { createGuest, updateGuest, type GuestPayload } from '../../../services/guestServices';
+import { createGuest, emptyModel, updateGuest, type GuestDialogProps, type GuestPayload } from '../../../services/guestServices';
 import { GuestSchema } from '../../../validations/GuestSchema';
-
-type GuestDialogProps = {
-    visible: boolean;
-    onHide: () => void;
-    onSaved?: () => void;
-    initial?: Partial<GuestPayload> | null;
-    mode?: 'create' | 'edit';
-    id?: string | null;
-};
-
-const emptyModel: GuestPayload = {
-    idNumber: '',
-    firstName: '',
-    lastName: '',
-    email: '',
-    phoneNumber: '',
-    street: '',
-    city: '',
-    country: '',
-};
 
 const GuestDialog: React.FC<GuestDialogProps> = ({
     visible,

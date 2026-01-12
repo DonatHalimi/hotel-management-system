@@ -1,11 +1,11 @@
+import { Button } from "primereact/button";
 import React, { useCallback, useState } from "react";
-import EntityTable from "../../../components/table/EntityTable";
 import { type ColumnDef } from "../../../components/table/DataTableWrapper";
+import EntityTable from "../../../components/table/EntityTable";
 import axiosInstance from "../../../config/axiosInstance";
 import { hasRole } from "../../../utils/auth";
-import { Button } from "primereact/button";
-import RoleDialog from "../dialogs/RoleDialog";
 import RoleDetails from "../details/RoleDetails";
+import RoleDialog from "../dialogs/RoleDialog";
 
 const getId = (row: any) => row.roleID || row.RoleID || row.id || row.Id || row._id;
 

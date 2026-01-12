@@ -1,7 +1,7 @@
-import React, { useState, useCallback } from "react";
-import DataTableWrapper, { type ColumnDef, showConfirmDialog, showConfirmPopup } from "./DataTableWrapper";
 import { Button as PrimeButton } from "primereact/button";
+import React, { useCallback, useState } from "react";
 import axiosInstance from "../../config/axiosInstance";
+import DataTableWrapper, { type ColumnDef, showConfirmDialog, showConfirmPopup } from "./DataTableWrapper";
 
 type FetchResult<T> = { data: T[]; total: number };
 

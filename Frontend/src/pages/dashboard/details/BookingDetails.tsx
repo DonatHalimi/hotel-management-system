@@ -1,8 +1,8 @@
-import React from "react";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
-import { BookingStatus } from "../tables/BookingTable";
+import React from "react";
 import DetailsSidebar from "../../../components/layout/DetailsSidebar";
+import { BookingStatus } from "../../../services/bookingServices";
 
 type BookingDetailsProps = {
     visible: boolean;

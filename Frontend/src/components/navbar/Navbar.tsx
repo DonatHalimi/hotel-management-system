@@ -1,14 +1,14 @@
 import { Menubar } from 'primereact/menubar'
 // import { InputText } from 'primereact/inputtext'
 // import { Badge } from 'primereact/badge'
+import { Button } from 'primereact/button'
 import type { MenuItem } from 'primereact/menuitem'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../../contexts/ToastContext'
+import { getCurrentUser } from '../../services/authServices'
 import AvatarMenu from './AvatarMenu'
 import { getMenuItems } from './MenuItems'
-import { Button } from 'primereact/button'
-import { useEffect, useState } from 'react'
-import { getCurrentUser } from '../../services/authServices';
 
 interface User {
     firstName: string,

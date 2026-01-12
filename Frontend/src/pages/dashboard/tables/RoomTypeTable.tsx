@@ -1,11 +1,11 @@
+import { Button } from "primereact/button";
 import { useCallback, useState } from "react";
-import EntityTable from "../../../components/table/EntityTable";
 import { type ColumnDef } from "../../../components/table/DataTableWrapper";
+import EntityTable from "../../../components/table/EntityTable";
 import axiosInstance from "../../../config/axiosInstance";
 import { hasRole } from "../../../utils/auth";
-import { Button } from "primereact/button";
-import RoomTypeDialog from "../dialogs/RoomTypeDialog";
 import RoomTypeDetails from "../details/RoomTypeDetails";
+import RoomTypeDialog from "../dialogs/RoomTypeDialog";
 
 const getId = (row: any) => row.roomTypeID || row.RoomTypeID || row.id || row.Id || row._id;
 

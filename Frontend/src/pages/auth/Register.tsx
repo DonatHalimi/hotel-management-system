@@ -1,14 +1,14 @@
+import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
+import { Form, Formik } from "formik";
 import { Button } from "primereact/button";
 import { Link, useNavigate } from "react-router-dom";
-import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
-import { useToast } from "../../contexts/ToastContext";
 import Navbar from "../../components/navbar/Navbar";
+import { useToast } from "../../contexts/ToastContext";
 import Email from "../../custom/auth/Email";
 import FirstName from "../../custom/auth/FirstName";
 import LastName from "../../custom/auth/LastName";
 import Password from "../../custom/auth/Password";
-import { Formik, Form } from "formik";
-import { registerUser, googleLogin } from "../../services/authServices";
+import { googleLogin, registerUser } from "../../services/authServices";
 import { RegisterSchema, registerInitialValues, type RegisterFormValues } from "../../validations/AuthSchema";
 
 const Register = () => {

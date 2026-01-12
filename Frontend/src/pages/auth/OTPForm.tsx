@@ -1,9 +1,9 @@
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useToast } from "../../contexts/ToastContext";
 import axiosInstance from "../../config/axiosInstance";
+import { useToast } from "../../contexts/ToastContext";
 
 const OTPForm = () => {
     const { toast } = useToast();
@@ -110,9 +110,7 @@ const OTPForm = () => {
 
     const isOtpComplete = otp.every(digit => digit !== "");
 
-    if (!email) {
-        return null;
-    }
+    if (!email) return null;
 
     return (
         <>
@@ -144,9 +142,9 @@ const OTPForm = () => {
                                         onChange={(e) => handleInputChange(index, e.target.value)}
                                         onKeyDown={(e) => handleKeyDown(index, e)}
                                         onPaste={index === 0 ? handlePaste : undefined}
-                                        className="w-12 h-12 text-center text-lg font-bold rounded-lg border-2 focus:border-blue-500 focus:shadow-lg transition-all duration-200"
                                         maxLength={1}
                                         disabled={loading}
+                                        className="w-12 h-12 text-center text-lg font-bold rounded-lg border-2 focus:border-blue-500 focus:shadow-lg transition-all duration-200"
                                     />
                                 </div>
                             ))}
@@ -167,8 +165,8 @@ const OTPForm = () => {
                                 icon={resendLoading ? <i className="pi pi-spinner animate-spin" /> : "pi pi-refresh"}
                                 onClick={handleResendOtp}
                                 disabled={resendLoading}
-                                className="bg-transparent border-2 border-gray-300 hover:border-blue-500 hover:bg-blue-50 disabled:opacity-60 disabled:cursor-not-allowed text-gray-700 hover:text-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
                                 outlined
+                                className="bg-transparent border-2 border-gray-300 hover:border-blue-500 hover:bg-blue-50 disabled:opacity-60 disabled:cursor-not-allowed text-gray-700 hover:text-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
                             />
                         </div>
                     </div>

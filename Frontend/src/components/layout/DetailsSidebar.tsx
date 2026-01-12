@@ -1,9 +1,9 @@
-import React, { useRef, useState } from "react";
-import { Sidebar } from "primereact/sidebar";
 import { Button } from "primereact/button";
 import { ConfirmDialog } from "primereact/confirmdialog";
 import { Menu } from "primereact/menu";
 import type { MenuItem } from "primereact/menuitem";
+import { Sidebar } from "primereact/sidebar";
+import React, { useRef, useState } from "react";
 import { useToast } from "../../contexts/ToastContext";
 
 type DetailsSidebarProps = {

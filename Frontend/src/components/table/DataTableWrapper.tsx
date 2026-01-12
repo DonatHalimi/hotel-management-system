@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
 import { Column } from 'primereact/column';
+import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
+import { ConfirmPopup, confirmPopup } from 'primereact/confirmpopup';
+import { DataTable } from 'primereact/datatable';
 import { Paginator } from 'primereact/paginator';
 import { ProgressSpinner } from 'primereact/progressspinner';
-import { DataTable } from 'primereact/datatable';
-import { ConfirmDialog } from 'primereact/confirmdialog';
-import { confirmDialog } from 'primereact/confirmdialog';
-import { ConfirmPopup, confirmPopup } from 'primereact/confirmpopup';
+import React, { useEffect, useState } from 'react';
 
 export type ColumnDef = {
     field: string;

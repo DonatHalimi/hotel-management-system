@@ -1,11 +1,11 @@
+import { Button } from "primereact/button";
 import { useCallback, useState } from "react";
-import EntityTable from "../../../components/table/EntityTable";
 import { type ColumnDef } from "../../../components/table/DataTableWrapper";
+import EntityTable from "../../../components/table/EntityTable";
 import axiosInstance from "../../../config/axiosInstance";
 import { hasRole } from "../../../utils/auth";
-import { Button } from "primereact/button";
-import PaymentDialog from "../dialogs/PaymentDialog";
 import PaymentDetails from "../details/PaymentDetails";
+import PaymentDialog from "../dialogs/PaymentDialog";
 
 const getId = (row: any) => row.paymentID || row.PaymentID || row.id || row.Id || row._id;
 

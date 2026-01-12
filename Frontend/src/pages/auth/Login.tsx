@@ -1,12 +1,12 @@
-import { Button } from "primereact/button";
-import { useNavigate, Link } from "react-router-dom";
 import { GoogleLogin, type CredentialResponse } from '@react-oauth/google';
+import { Form, Formik } from "formik";
+import { Button } from "primereact/button";
+import { Link, useNavigate } from "react-router-dom";
+import Navbar from "../../components/navbar/Navbar";
 import { useToast } from "../../contexts/ToastContext";
 import Email from "../../custom/auth/Email";
 import Password from "../../custom/auth/Password";
-import Navbar from "../../components/navbar/Navbar";
-import { loginUser, googleLogin } from "../../services/authServices";
-import { Formik, Form } from "formik";
+import { googleLogin, loginUser } from "../../services/authServices";
 import { LoginSchema, loginInitialValues, type LoginFormValues } from "../../validations/AuthSchema";
 
 const Login = () => {

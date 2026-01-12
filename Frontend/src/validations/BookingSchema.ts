@@ -3,7 +3,7 @@ import { BookingConstants } from "./constants/booking";
 
 export const BookingSchema = Yup.object().shape({
     guestID: Yup.string().required("Guest is required"),
-    
+
     roomID: Yup.string().required("Room is required"),
 
     checkInDate: Yup.date()

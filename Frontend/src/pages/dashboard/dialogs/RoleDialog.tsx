@@ -1,26 +1,12 @@
-import React from 'react';
+import { ErrorMessage, Field, Form, Formik } from 'formik';
+import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
-import { Button } from 'primereact/button';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
+import React from 'react';
 import { useToast } from '../../../contexts/ToastContext';
-import { createRole, updateRole, type RolePayload } from '../../../services/roleServices';
+import { createRole, emptyModel, updateRole, type RoleDialogProps, type RolePayload } from '../../../services/roleServices';
 import { RoleSchema } from '../../../validations/RoleSchema';
-
-type RoleDialogProps = {
-    visible: boolean;
-    onHide: () => void;
-    onSaved?: () => void;
-    initial?: Partial<RolePayload> | null;
-    mode?: 'create' | 'edit';
-    id?: string | null;
-};
-
-const emptyModel: RolePayload = {
-    name: '',
-    description: '',
-};
 
 const RoleDialog: React.FC<RoleDialogProps> = ({
     visible,

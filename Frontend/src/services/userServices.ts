@@ -1,5 +1,23 @@
 import axiosInstance from '../config/axiosInstance';
 
+export type UserDialogProps = {
+    visible: boolean;
+    onHide: () => void;
+    onSaved?: () => void;
+    initial?: Partial<UserPayload> | null;
+    mode?: "create" | "edit";
+    id?: string | null;
+};
+
+export const emptyModel: UserPayload = {
+    firstName: "",
+    lastName: "",
+    email: "",
+    phoneNumber: "",
+    password: "",
+    roleID: null,
+};
+
 export interface UserPayload {
     firstName?: string | null;
     lastName?: string | null;

@@ -1,6 +1,6 @@
+import { Button } from 'primereact/button';
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Button } from 'primereact/button';
 
 const Unauthorized: React.FC = () => (
     <div className="flex items-center justify-center h-screen">

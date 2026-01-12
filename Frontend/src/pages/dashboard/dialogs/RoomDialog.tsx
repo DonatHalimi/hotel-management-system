@@ -1,62 +1,15 @@
-import React, { useState, useEffect } from "react";
+import { ErrorMessage, Field, Form, Formik } from "formik";
+import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
+import { Dropdown } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
-import { Dropdown } from "primereact/dropdown";
 import { ToggleButton } from "primereact/togglebutton";
-import { Button } from "primereact/button";
-import { Formik, Form, Field, ErrorMessage } from "formik";
-import { useToast } from "../../../contexts/ToastContext";
-import { createRoom, updateRoom } from "../../../services/roomServices";
-import { RoomSchema } from "../../../validations/RoomSchema";
+import React, { useEffect, useState } from "react";
 import axiosInstance from "../../../config/axiosInstance";
-
-type RoomPayload = {
-    roomNumber?: string;
-    floorNumber: number;
-    status: number;
-    condition: number;
-    notes?: string;
-    hotelID: string;
-    roomTypeID: string;
-    isActive: boolean;
-};
-
-type RoomDialogProps = {
-    visible: boolean;
-    onHide: () => void;
-    onSaved?: () => void;
-    initial?: Partial<RoomPayload> | null;
-    mode?: "create" | "edit";
-    id?: string | null;
-};
-
-const RoomStatusOptions = [
-    { label: "Available", value: 0 },
-    { label: "Occupied", value: 1 },
-    { label: "Out of Order", value: 2 },
-    { label: "Maintenance", value: 3 },
-    { label: "Cleaning", value: 4 },
-    { label: "Reserved", value: 5 },
-];
-
-const RoomConditionOptions = [
-    { label: "Excellent", value: 0 },
-    { label: "Good", value: 1 },
-    { label: "Fair", value: 2 },
-    { label: "Poor", value: 3 },
-];
-
-const emptyModel: RoomPayload = {
-    roomNumber: "",
-    floorNumber: 1,
-    status: 0,
-    condition: 1,
-    notes: "",
-    hotelID: "",
-    roomTypeID: "",
-    isActive: true,
-};
+import { useToast } from "../../../contexts/ToastContext";
+import { createRoom, emptyModel, RoomConditionOptions, RoomStatusOptions, updateRoom, type RoomDialogProps, type RoomPayload } from "../../../services/roomServices";
+import { RoomSchema } from "../../../validations/RoomSchema";
 
 const RoomDialog: React.FC<RoomDialogProps> = ({
     visible,

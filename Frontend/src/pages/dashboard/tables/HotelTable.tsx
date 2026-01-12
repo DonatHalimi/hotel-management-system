@@ -1,11 +1,11 @@
-import React, { useCallback, useState } from "react";
-import EntityTable from "../../../components/table/EntityTable";
-import { type ColumnDef } from "../../../components/table/DataTableWrapper";
-import axiosInstance from "../../../config/axiosInstance";
-import HotelDialog from "../dialogs/HotelDialog";
-import { hasRole } from "../../../utils/auth";
 import { Button } from "primereact/button";
+import React, { useCallback, useState } from "react";
+import { type ColumnDef } from "../../../components/table/DataTableWrapper";
+import EntityTable from "../../../components/table/EntityTable";
+import axiosInstance from "../../../config/axiosInstance";
+import { hasRole } from "../../../utils/auth";
 import HotelDetails from "../details/HotelDetails";
+import HotelDialog from "../dialogs/HotelDialog";
 
 const getId = (row: any) => row.hotelID || row.HotelID || row.id || row.Id || row._id;
 

@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
-import { Card } from "primereact/card";
 import { Avatar } from "primereact/avatar";
 import { Button } from "primereact/button";
+import { Card } from "primereact/card";
+import { useEffect, useState } from "react";
+import { useToast } from "../contexts/ToastContext";
 import { getCurrentUser } from "../services/authServices";
 import { updateCurrentUser } from "../services/userServices";
 import EditUserDialog from "./dashboard/dialogs/EditUserDialog";
-import { useToast } from "../contexts/ToastContext";
 
 const Profile = () => {
     const [user, setUser] = useState<any>(null);

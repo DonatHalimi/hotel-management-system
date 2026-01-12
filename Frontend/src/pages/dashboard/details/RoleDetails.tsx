@@ -1,6 +1,6 @@
-import React from "react";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
+import React from "react";
 import DetailsSidebar from "../../../components/layout/DetailsSidebar";
 
 type RoleDetailsProps = {

@@ -14,11 +14,11 @@ export const RoomSchema = Yup.object().shape({
 
     status: Yup.number()
         .required("Room status is required")
-        .oneOf([0, 1, 2, 3, 4, 5], "Invalid room status"),
+        .oneOf(RoomConstants.VALID_STATUS, "Invalid room status"),
 
     condition: Yup.number()
         .required("Room condition is required")
-        .oneOf([0, 1, 2, 3], "Invalid room condition"),
+        .oneOf(RoomConstants.VALID_CONDITION, "Invalid room condition"),
 
     notes: Yup.string()
         .max(RoomConstants.MAX_NOTES_LENGTH, `Notes cannot exceed ${RoomConstants.MAX_NOTES_LENGTH} characters`),

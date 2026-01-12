@@ -1,7 +1,7 @@
-import React from "react";
+import { Chip } from "primereact/chip";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
-import { Chip } from "primereact/chip";
+import React from "react";
 import DetailsSidebar from "../../../components/layout/DetailsSidebar";
 
 type HotelDetailsProps = {

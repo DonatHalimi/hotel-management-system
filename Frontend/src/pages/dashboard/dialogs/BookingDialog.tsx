@@ -1,49 +1,15 @@
-import React, { useEffect, useState } from "react";
-import { Dialog } from "primereact/dialog";
-import { InputText } from "primereact/inputtext";
-import { Dropdown } from "primereact/dropdown";
-import { Calendar } from "primereact/calendar";
+import { Field, Form, Formik } from "formik";
 import { Button } from "primereact/button";
-import { Formik, Form, Field } from "formik";
-import { useToast } from "../../../contexts/ToastContext";
-import axiosInstance from "../../../config/axiosInstance";
-import { createBooking, updateBooking, type BookingPayload } from "../../../services/bookingServices";
+import { Calendar } from "primereact/calendar";
+import { Dialog } from "primereact/dialog";
+import { Dropdown } from "primereact/dropdown";
 import { InputNumber } from "primereact/inputnumber";
+import { InputText } from "primereact/inputtext";
+import React, { useEffect, useState } from "react";
+import axiosInstance from "../../../config/axiosInstance";
+import { useToast } from "../../../contexts/ToastContext";
+import { BookingStatusOptions, createBooking, emptyModel, updateBooking, type BookingDialogProps, type BookingPayload } from "../../../services/bookingServices";
 import { BookingSchema } from "../../../validations/BookingSchema";
-
-export const BookingStatus: Record<number, string> = {
-    0: "Pending",
-    1: "Confirmed",
-    2: "Checked In",
-    3: "Checked Out",
-    4: "Cancelled",
-    5: "No Show",
-};
-
-type BookingDialogProps = {
-    visible: boolean;
-    onHide: () => void;
-    onSaved?: () => void;
-    initial?: Partial<BookingPayload> | null;
-    mode?: "create" | "edit";
-    id?: string | null;
-};
-
-const BookingStatusOptions = Object.entries(BookingStatus).map(([value, label]) => ({
-    label,
-    value: Number(value),
-}));
-
-const emptyModel: BookingPayload = {
-    guestID: "",
-    roomID: "",
-    checkInDate: "",
-    checkOutDate: "",
-    numberOfGuests: 1,
-    totalPrice: 0,
-    status: 0,
-    cancellationReason: "",
-};
 
 const BookingDialog: React.FC<BookingDialogProps> = ({
     visible,

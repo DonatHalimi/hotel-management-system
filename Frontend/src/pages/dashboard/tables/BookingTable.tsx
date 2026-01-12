@@ -1,22 +1,14 @@
+import { Button } from "primereact/button";
 import React, { useCallback, useState } from "react";
-import EntityTable from "../../../components/table/EntityTable";
 import { type ColumnDef } from "../../../components/table/DataTableWrapper";
+import EntityTable from "../../../components/table/EntityTable";
 import axiosInstance from "../../../config/axiosInstance";
 import { hasRole } from "../../../utils/auth";
-import { Button } from "primereact/button";
-import BookingDialog from "../dialogs/BookingDialog";
 import BookingDetails from "../details/BookingDetails";
+import BookingDialog from "../dialogs/BookingDialog";
+import { BookingStatus } from "../../../services/bookingServices";
 
 const getId = (row: any) => row.bookingID || row.BookingID || row.id || row.Id || row._id;
-
-export const BookingStatus: Record<number, string> = {
-    0: "Pending",
-    1: "Confirmed",
-    2: "Checked In",
-    3: "Checked Out",
-    4: "Cancelled",
-    5: "No Show",
-};
 
 const BookingTable: React.FC = () => {
     const [editingId, setEditingId] = useState<string | null>(null);

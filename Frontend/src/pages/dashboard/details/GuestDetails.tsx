@@ -1,5 +1,5 @@
-import React from "react";
 import { InputText } from "primereact/inputtext";
+import React from "react";
 import DetailsSidebar from "../../../components/layout/DetailsSidebar";
 
 type GuestDetailsProps = {

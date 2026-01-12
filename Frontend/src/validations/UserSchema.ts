@@ -1,20 +1,21 @@
 import * as Yup from "yup";
+import { UserConstants } from "./constants/user";
 
 export const UserSchema = Yup.object().shape({
     firstName: Yup.string()
         .required("First name is required")
         .matches(/^[A-Z][a-z]*$/, "First name must start with a capital letter and contain only letters")
-        .max(20, "First name cannot exceed 20 characters"),
+        .max(UserConstants.MAX_FIRST_NAME_LENGTH, `First name cannot exceed ${UserConstants.MAX_FIRST_NAME_LENGTH} characters`),
 
     lastName: Yup.string()
         .required("Last name is required")
         .matches(/^[A-Z][a-z]*$/, "Last name must start with a capital letter and contain only letters")
-        .max(20, "Last name cannot exceed 20 characters"),
+        .max(UserConstants.MAX_LAST_NAME_LENGTH, `Last name cannot exceed ${UserConstants.MAX_LAST_NAME_LENGTH} characters`),
 
     email: Yup.string()
         .required("Email is required")
         .email("Invalid email format")
-        .max(100, "Email cannot exceed 100 characters"),
+        .max(UserConstants.MAX_EMAIL_LENGTH, `Email cannot exceed ${UserConstants.MAX_EMAIL_LENGTH} characters`),
 
     roleID: Yup.string().required("Role is required"),
 

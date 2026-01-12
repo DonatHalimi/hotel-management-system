@@ -5,7 +5,9 @@ export const RoomConstants = {
     MAX_CAPACITY: 15,
     MIN_PRICE_PER_NIGHT: 20,
     MAX_PRICE_PER_NIGHT: 5000,
-    MAX_NOTES_LENGTH: 500,
     MIN_FLOOR_NUMBER: -5,
     MAX_FLOOR_NUMBER: 200,
+    VALID_STATUS: [0, 1, 2, 3, 4, 5],
+    VALID_CONDITION: [0, 1, 2, 3],
+    MAX_NOTES_LENGTH: 500,
 };
